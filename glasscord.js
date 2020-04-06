@@ -81,9 +81,11 @@ class BrowserWindow extends electron.BrowserWindow {
 		
 		if(process.platform == 'darwin'){
 			// Mac-only properites
-			this._glasscord_macos_vibrancy = 'window'; // Vibrancy
+			this._glasscord_macos_vibrancy = null; // Vibrancy
 		}
-
+		
+		this.invokedOptions = originalOptions;
+		
 		// Let's register our event listeners now.
 		this._glasscord_eventListener();
 	}
@@ -108,7 +110,6 @@ class BrowserWindow extends electron.BrowserWindow {
 		// from a fully transparent one, a black opaque tint is applied in every
 		// case. A workaround is applying the same color with opacity 99% before
 		// cranking this one up to 100%.
-		// TODO: Test if Electron is retarded on macOS
 		if(process.platform == 'linux'){
 			if(backgroundColor[0] == 255){
 				let fixupBgColor = Array.from(backgroundColor);
@@ -130,6 +131,16 @@ class BrowserWindow extends electron.BrowserWindow {
 		backgroundColor = '#' + backgroundColor;
 		this._glasscord_log('Final background color: ' + backgroundColor, 'log');
 		super.setBackgroundColor(backgroundColor);
+		
+		// It seems that Electron is retarded also on macOS. Since it won't update the background
+		// unless someone causes the window to refresh, let's refresh it with a lame trick
+		if(process.platform == 'darwin'){
+			let bounds = this.getBounds();
+			bounds.width += 1;
+			this.setBounds(bounds);
+			bounds.width -= 1;
+			this.setBounds(bounds);
+		}
 	}
 
 	/**
@@ -313,11 +324,11 @@ class BrowserWindow extends electron.BrowserWindow {
 		if(process.platform == 'darwin'){
 			promises.push(this._glasscord_getCssProp('--glasscord-macos-vibrancy').then(vibrancy => {
 				if(vibrancy != null){
-					if(vibrancy == "none") this._glasscord_macos_vibrancy = '';
+					if(vibrancy == "none") this._glasscord_macos_vibrancy = null;
 					else this._glasscord_macos_vibrancy = vibrancy;
 					return;
 				}
-				this._glasscord_macos_vibrancy = 'window';
+				this._glasscord_macos_vibrancy = null;
 			}));
 		}
 		
