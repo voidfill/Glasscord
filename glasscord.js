@@ -445,7 +445,14 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * Hacky but it does the job.
 	 */
 	_glasscord_getCssProp(propName){
-		return this.webContents.executeJavaScript("(function(){let flag = getComputedStyle(document.documentElement).getPropertyValue('"+propName+"'); if(flag) return flag.trim().replace('\"','');}())").then(res => { if(res) return res; else return null;});
+		return this.webContents.executeJavaScript(`(function(){
+			let flag = getComputedStyle(document.documentElement).getPropertyValue('${propName}');
+			if(flag)
+				return flag.trim().replace('"','');
+		}())`).then(res => {
+			if(res) return res;
+			return null;
+		});
 	}
 	
 	/**
