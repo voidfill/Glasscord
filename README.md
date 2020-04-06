@@ -1,7 +1,9 @@
 # Glasscord
 Providing composition effects to the Discord client.
 
-[Chat with us on Discord](https://discord.gg/SftnByN)
+[Chat with us on our Discord support server!](https://discord.gg/SftnByN)
+
+[![Chat with us on Discord](https://discordapp.com/api/guilds/696696149301657640/embed.png)](https://discord.gg/SftnByN)
 
 ![Preview](preview.png)
 
