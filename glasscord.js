@@ -55,8 +55,18 @@ class BrowserWindow extends electron.BrowserWindow {
 
 		if(process.platform != 'win32')
 			originalOptions.transparent = true;
-		
-		let tintRaw = BrowserWindow._glasscord_RGBHexStringToARGBColorArray(originalOptions.backgroundColor);
+
+		let bgColor;
+		if(originalOptions.backgroundColor)
+			bgColor = originalOptions.backgroundColor.replace('#','');
+		else
+			bgColor = 'FFFFFFFF'; // Assume Electron's default color, which is white
+
+		let tintRaw;
+		if(bgColor.length == 6)
+			tintRaw = BrowserWindow._glasscord_RGBHexStringToARGBColorArray(bgColor);
+		else
+			tintRaw = BrowserWindow._glasscord_ARGBHexStringToColorArray(bgColor);
 
 		super(originalOptions);
 		// Now we can use 'this', so we'll set object properties from now on
@@ -64,7 +74,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		
 		this._glasscord_enabled = false;
 		
-		this._glasscord_tint_stock_opaque = BrowserWindow._glasscord_ARGBcolorArrayToHexString(tintRaw);
+		this._glasscord_tint_stock_opaque = BrowserWindow._glasscord_ARGBcolorArrayToHexString(BrowserWindow._glasscord_opacify(tintRaw, 255));
 		this._glasscord_tint_stock_transparent = BrowserWindow._glasscord_ARGBcolorArrayToHexString(BrowserWindow._glasscord_opacify(tintRaw, 0));
 		this._glasscord_tint = this._glasscord_tint_stock_transparent;
 		
@@ -238,6 +248,7 @@ class BrowserWindow extends electron.BrowserWindow {
 	 */
 	_glasscord_showHook(){
 		this._glasscord_variableUpdate();
+		this._glasscord_watchdog();
 	}
 	
 	/**
@@ -277,6 +288,56 @@ class BrowserWindow extends electron.BrowserWindow {
 	}
 	
 	/**
+	 * Attempt to make a watchdog for style changes
+	 */
+	_glasscord_watchdog(){
+		this.webContents.executeJavaScript(`(function(){
+			const options = {attributes: true, attributeOldValue: true, childList: true, subtree: true};
+			const targetNode = document.head;
+			const callback = function(mutationsList, observer){
+				let shouldUpdateGlasscord = false;
+				for(let mutation of mutationsList){
+					console.log(mutation.type);
+					if(mutation.addedNodes.length != 0){ // some nodes were added!
+						for(let addedNode of mutation.addedNodes){
+							console.log(addedNode);
+							if(addedNode.nodeName.toLowerCase() == 'style'){
+								shouldUpdateGlasscord = true;
+								break;
+							}
+						}
+					}
+					
+					if(shouldUpdateGlasscord) break; // don't spend other time iterating
+				
+					if(mutation.removedNodes.length != 0){ // some nodes were removed!
+						for(let removedNode of mutation.removedNodes){
+							if(removedNode.nodeName.toLowerCase() == 'style'){
+								shouldUpdateGlasscord = true;
+								break;
+							}
+						}
+					}
+					
+					if(shouldUpdateGlasscord) break; // don't spend other time iterating
+				
+					if(mutation.target.nodeName.toLowerCase() == 'style' &&
+						mutation.attributeName == 'innerText' &&
+						mutation.oldValue != mutation.target.innerText
+					) shouldUpdateGlasscord = true;
+				}
+			
+				if(shouldUpdateGlasscord){
+					window.require('electron').ipcRenderer.send('glasscord_refresh_variables');
+				}
+			}
+			
+			const observer = new MutationObserver(callback);
+			observer.observe(targetNode, options);
+		}())`);
+	}
+	
+	/**
 	 * This is the method that gets called whenever a variable update is requested.
 	 * It is DARN IMPORTANT to keep ALL the variables up to date!
 	 * This function is a void that runs async code, so keep that in mind!
@@ -296,7 +357,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		}));
 		
 		if(process.platform == 'win32'){
-			promises.push(this._glasscord_getCssProp('--glasscord-win-type').then(blurType => {
+			promises.push(this._glasscord_getCssProp('--glasscord-win-blur').then(blurType => {
 				if(blurType != null){
 					this._glasscord_win32_type = blurType;
 					return;
