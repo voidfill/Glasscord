@@ -495,8 +495,8 @@ class BrowserWindow extends electron.BrowserWindow {
 				}
 				xprop = stdout.trim();
 				
-				const bashCommand = `${xprop} -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
-				execFile('bash', ['-c',bashCommand], (error,stdout,stderr) => {
+				const shCommand = `${xprop} -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
+				execFile('sh', ['-c',shCommand], (error,stdout,stderr) => {
 					if(error) return;
 					switch(stdout.trim()){
 						case 'KWin':
