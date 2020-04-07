@@ -274,7 +274,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		electron.ipcMain.on('glasscord_on', () => { this.glasscord_enable(); });
 		electron.ipcMain.on('glasscord_off', () => { this.glasscord_disable(); });
 		electron.ipcMain.on('glasscord_refresh_view', () => {this.glasscord_update(); });
-		electron.ipcMain.on('glasscord_refresh_variables', () => {this._glasscord_variableUpdate(); });
+		electron.ipcMain.on('glasscord_refresh_variables', () => {this._glasscord_log('IPC requested update', 'log'); this._glasscord_variableUpdate(); });
 		// Everything else can be controlled via CSS styling
 		
 		// Work around an Electron(?) bug that only happens on Linux/Mac
@@ -308,11 +308,19 @@ class BrowserWindow extends electron.BrowserWindow {
 	 */
 	_glasscord_watchdog(){
 		this.webContents.executeJavaScript(`(function(){
-			const options = {attributes: true, attributeOldValue: true, childList: true, subtree: true};
+			const options = {
+				childList: true,
+				subtree: true
+			};
 			const targetNode = document.head;
 			const callback = function(mutationsList, observer){
 				let shouldUpdateGlasscord = false;
 				for(let mutation of mutationsList){
+					if(mutation.target.nodeName.toLowerCase() == 'style'){ // text in style has changed!
+							shouldUpdateGlasscord = true;
+							break;
+					}
+					
 					if(mutation.addedNodes.length != 0){ // some nodes were added!
 						for(let addedNode of mutation.addedNodes){
 							if(addedNode.nodeName.toLowerCase() == 'style'){
@@ -332,13 +340,6 @@ class BrowserWindow extends electron.BrowserWindow {
 							}
 						}
 					}
-					
-					if(shouldUpdateGlasscord) break; // don't spend other time iterating
-				
-					if(mutation.target.nodeName.toLowerCase() == 'style' &&
-						mutation.attributeName == 'innerText' &&
-						mutation.oldValue != mutation.target.innerText
-					) shouldUpdateGlasscord = true;
 				}
 			
 				if(shouldUpdateGlasscord){
@@ -432,17 +433,16 @@ class BrowserWindow extends electron.BrowserWindow {
 					if(mode != null){
 						switch(mode){
 						case "true":
-						default:
 							this.glasscord_enable();
 							break;
 						case "false":
+						default:
 							this.glasscord_disable();
 							break; 
 						}
 						return;
 					}
-					// DEBUG: if Mode is undefined, enable it
-					//this.glasscord_enable();
+					this.glasscord_disable(); // if mode is undefined, disable it
 				}
 			);
 		});
