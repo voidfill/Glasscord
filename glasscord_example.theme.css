@@ -63,6 +63,7 @@
 	--background-lights-out: #000;
 	--background-pinned: #2f3136ff;
 	--background-profile-expand: #2f3136ff;
+	--background-emoji: #2f3136ff;
 	--text-lights-out: #f0f0f0;
 	--background-titlebar: #2f313650;
 }
@@ -110,6 +111,7 @@
 	--background-lights-out: #fff;
 	--background-pinned: #f2f3f5ff;
 	--background-profile-expand: #f2f3f5ff;
+	--background-emoji: #f2f3f5ff;
 	--text-lights-out: #202020;
 	--background-titlebar: #f2f3f550;
 	--interactive-muted: #95999d;
@@ -173,6 +175,10 @@
 	border-radius: 0;
 	-webkit-box-shadow: none;
 	box-shadow: none;
+}
+
+.emojiPicker-3m1S-j {
+	background-color: var(--background-emoji);
 }
 
 .appMount-3lHmkl {
