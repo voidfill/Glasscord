@@ -19,12 +19,12 @@ const path = require('path');
 
 if(process.platform == 'win32'){
 	try{
-		var ewc = require('./ewc.asar');
+		var ewc = process.arch == 'x64' ? require('./ewc64.asar') : require('./ewc.asar');
 	} catch (e) {
 		electron.dialog.showMessageBoxSync({
 			type: 'error',
 			title: 'Glasscord',
-			message: 'The ewc.asar file is either missing, corrupt or not placed in the correct folder!',
+			message: 'The EWC dependency is either missing, corrupt or not placed in the correct folder!',
 			buttons: ['Alexa, play Despacito']
 		});
 		process.exit(1);
@@ -202,7 +202,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		
 		if(process.platform == 'win32'){
 			this.setBackgroundColor('#00000000');
-			this._glasscord_win32();
+			this._glasscord_win32(this._glasscord_win32_type);
 			return;
 		}
 		
@@ -285,8 +285,8 @@ class BrowserWindow extends electron.BrowserWindow {
 		
 		// Windows' performance mode toggle
 		if(process.platform == 'win32'){
-			const lessCostlyBlurWin = debounce(() => {ewc.setBlurBehind(this, 0x01000000)}, 50, true);
-			const moreCostlyBlurWin = debounce(() => {this._glasscord_win32()}, 50);
+			const lessCostlyBlurWin = debounce(() => {this._glasscord_win32('blurbehind')}, 50, true);
+			const moreCostlyBlurWin = debounce(() => {this._glasscord_win32('acrylic')}, 50);
 			this.on('move', () => {
 				if(this._glasscord_win32_type == 'acrylic' && this._glasscord_win32_performance_mode){
 					lessCostlyBlurWin();
@@ -452,9 +452,9 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * This method handles blur and transparency on Windows.
 	 * There's nothing special about it, really.
 	 */
-	_glasscord_win32(){
+	_glasscord_win32(type){
 		let win32_tint = parseInt(this._glasscord_tint.replace('#',''), 16);
-		switch(this._glasscord_win32_type){
+		switch(type){
 			case 'acrylic':
 				if(win32_tint >>> 24 == 0)
 					win32_tint |= 0x01000000; // FUCK WINDOWS.
