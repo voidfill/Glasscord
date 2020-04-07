@@ -17,9 +17,19 @@
 const electron = require('electron');
 const path = require('path');
 
-if(process.platform == 'win32')
-	var ewc = require('./ewc.asar');
-
+if(process.platform == 'win32'){
+	try{
+		var ewc = require('./ewc.asar');
+	} catch (e) {
+		electron.dialog.showMessageBoxSync({
+			type: 'error',
+			title: 'Glasscord',
+			message: 'The ewc.asar file is either missing, corrupt or not placed in the correct folder!',
+			buttons: ['Alexa, play Despacito']
+		});
+		process.exit(1);
+	}
+}
 /**
  * Debounce function
  * Might come in handy, given all those bouncy events!
@@ -75,7 +85,12 @@ class BrowserWindow extends electron.BrowserWindow {
 		this._glasscord_enabled = false;
 		
 		this._glasscord_tint_stock_opaque = BrowserWindow._glasscord_ARGBcolorArrayToHexString(BrowserWindow._glasscord_opacify(tintRaw, 255));
-		this._glasscord_tint_stock_transparent = BrowserWindow._glasscord_ARGBcolorArrayToHexString(BrowserWindow._glasscord_opacify(tintRaw, 0));
+
+		// we should preserve transparency if it's there; otherwise we can just make the color fully transparent
+		this._glasscord_tint_stock_transparent = BrowserWindow._glasscord_ARGBcolorArrayToHexString(
+			tintRaw[0] == 255 ? BrowserWindow._glasscord_opacify(tintRaw, 0) : tintRaw
+		);
+
 		this._glasscord_tint = this._glasscord_tint_stock_transparent;
 		
 		if(process.platform == 'win32'){
@@ -288,7 +303,8 @@ class BrowserWindow extends electron.BrowserWindow {
 	}
 	
 	/**
-	 * Attempt to make a watchdog for style changes
+	 * Method to spawn a watchdog in the Discord window
+	 * This way we can watch for style changes and update Glasscord accordingly
 	 */
 	_glasscord_watchdog(){
 		this.webContents.executeJavaScript(`(function(){
@@ -297,10 +313,8 @@ class BrowserWindow extends electron.BrowserWindow {
 			const callback = function(mutationsList, observer){
 				let shouldUpdateGlasscord = false;
 				for(let mutation of mutationsList){
-					console.log(mutation.type);
 					if(mutation.addedNodes.length != 0){ // some nodes were added!
 						for(let addedNode of mutation.addedNodes){
-							console.log(addedNode);
 							if(addedNode.nodeName.toLowerCase() == 'style'){
 								shouldUpdateGlasscord = true;
 								break;
@@ -456,16 +470,44 @@ class BrowserWindow extends electron.BrowserWindow {
 	}
 	
 	_glasscord_linux_requestBlur(mode){
+		if(mode && process.env.XDG_SESSION_TYPE != 'x11'){
+			electron.dialog.showMessageBoxSync({
+				type: 'warning',
+				title: 'Glasscord',
+				message: 'You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!',
+				buttons: ['Alexa, play Despacito']
+			});
+			return;
+		}
+		
 		if(process.env.XDG_SESSION_TYPE == 'x11'){
-			const bashCommand = `xprop -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
 			let execFile = require('child_process').execFile;
-			execFile('bash', ['-c',bashCommand], (error,stdout,stderr) => {
-				if(error) return;
-				switch(stdout.trim()){
-					case 'KWin':
-						this._glasscord_linux_kwin_requestBlur(mode);
-						break;
+			let xprop;
+			execFile('which', ['xprop'], (error,stdout,stderr) => {
+				if(error){
+					electron.dialog.showMessageBoxSync({
+					type: 'error',
+					title: 'Glasscord',
+					message: 'Your system is missing the xprop tool. Please install it to be able to request the frosted glass effect!',
+					buttons: ['Ahoy!']
+					});
+					return;
 				}
+				xprop = stdout.trim();
+				
+				const bashCommand = `${xprop} -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
+				execFile('bash', ['-c',bashCommand], (error,stdout,stderr) => {
+					if(error) return;
+					switch(stdout.trim()){
+						case 'KWin':
+							this._glasscord_linux_kwin_requestBlur(mode);
+							break;
+						default:
+							if(mode)
+								this._glasscord_log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
+							break;
+					}
+				});
 			});
 		}
 	}
@@ -498,7 +540,7 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * Another handy method to log directly to DevTools
 	 */
 	_glasscord_log(message, level){
-		this.webContents.executeJavaScript("console." + level + "('" + message + "');");
+		this.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:initial;font-weight:normal;');");
 	}
 	
 	/**
