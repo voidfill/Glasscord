@@ -1,4 +1,4 @@
-# Glasscord
+# ![Glasscord](glasscord_banner.png)
 Providing composition effects to the Discord client.
 
 [Chat with us on our Discord support server!](https://discord.gg/SftnByN)
