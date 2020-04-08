@@ -60,6 +60,7 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * Notice, however, that a lot of code is split into methods.
 	 */
 	constructor(originalOptions) {
+		let _originalOptions = {... originalOptions };
 		if (!originalOptions || !originalOptions.webPreferences || !originalOptions.title)
 			return super(originalOptions);
 
@@ -81,6 +82,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		super(originalOptions);
 		// Now we can use 'this', so we'll set object properties from now on
 		this._glasscord_exposeToDevTools();
+		this._backgroundColor = originalOptions.backgroundColor || '#ffffffff'; // macOS workaround epilepsy mitigation
 		
 		this._glasscord_enabled = false;
 		
@@ -110,6 +112,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		}
 		
 		this.invokedOptions = originalOptions;
+		this._invokedOptions = _originalOptions;
 		
 		// Let's register our event listeners now.
 		this._glasscord_eventListener();
@@ -120,6 +123,8 @@ class BrowserWindow extends electron.BrowserWindow {
 	 *   when Glasscord is enabled. This method does the job.
 	 */
 	setBackgroundColor(backgroundColor){
+		if(this._backgroundColor == backgroundColor) return; // Compare against the cached value (macOS workaround epilepsy mitigation)
+		
 		this._glasscord_log('Initial background color: ' + backgroundColor, 'log');
 		// strip the hash char
 		backgroundColor = backgroundColor.replace('#','');
@@ -156,14 +161,15 @@ class BrowserWindow extends electron.BrowserWindow {
 		backgroundColor = '#' + backgroundColor;
 		this._glasscord_log('Final background color: ' + backgroundColor, 'log');
 		super.setBackgroundColor(backgroundColor);
+		this._backgroundColor = backgroundColor; // Cache a value (macOS workaround epilepsy mitigation)
 		
 		// It seems that Electron is retarded also on macOS. Since it won't update the background
 		// unless someone causes the window to refresh, let's refresh it with a lame trick
 		if(process.platform == 'darwin'){
 			let bounds = this.getBounds();
-			bounds.width += 1;
+			bounds.height += 1;
 			this.setBounds(bounds);
-			bounds.width -= 1;
+			bounds.height -= 1;
 			this.setBounds(bounds);
 		}
 	}
