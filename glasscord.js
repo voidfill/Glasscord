@@ -453,7 +453,11 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * There's nothing special about it, really.
 	 */
 	_glasscord_win32(type){
-		let win32_tint = parseInt(this._glasscord_tint.replace('#',''), 16);
+		let win32_tint = BrowserWindow._glasscord_ARGBcolorArrayToInt(
+			BrowserWindow._glasscord_ARGBtoABGR(
+				BrowserWindow._glasscord_ARGBHexStringToColorArray(this._glasscord_tint)
+			)
+		);
 		switch(type){
 			case 'acrylic':
 				if(win32_tint >>> 24 == 0)
@@ -595,16 +599,20 @@ class BrowserWindow extends electron.BrowserWindow {
 		});
 	}
 	
-	/**
-	 * Simple color array to hex string converter
-	 */
-	static _glasscord_ARGBcolorArrayToHexString(col, prependHash = true){
-		return (prependHash ? '#' : '') + ((
+	static _glasscord_ARGBcolorArrayToInt(col){
+		return ((
 			(col[0] << 24 >>> 0) |
 			(col[1] << 16 >>> 0) |
 			(col[2] << 8 >>> 0) |
 			(col[3] >>> 0)
-		) >>> 0).toString(16).padStart(8, '0');
+		) >>> 0);
+	}
+	
+	/**
+	 * Simple color array to hex string converter
+	 */
+	static _glasscord_ARGBcolorArrayToHexString(col, prependHash = true){
+		return (prependHash ? '#' : '') + BrowserWindow._glasscord_ARGBcolorArrayToInt(col).toString(16).padStart(8, '0');
 	}
 	
 	static _glasscord_ARGBHexStringToColorArray(col){
@@ -624,6 +632,15 @@ class BrowserWindow extends electron.BrowserWindow {
 			(colRaw & 0xff0000) >>> 16,
 			(colRaw & 0x00ff00) >>> 8,
 			(colRaw & 0x0000ff)
+		];
+	}
+	
+	static _glasscord_ARGBtoABGR(col){
+		return [
+			col[0], // alpha
+			col[3], // blue
+			col[2], // green
+			col[1] // red
 		];
 	}
 	
