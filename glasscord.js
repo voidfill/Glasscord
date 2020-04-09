@@ -143,6 +143,7 @@ class Glasscord{
 	 */
 	_watchdog(){
 		this.win.webContents.executeJavaScript(`(function(){
+			window.require('electron').ipcRenderer.send('glasscord_refresh');
 			const callback = function(mutationsList, observer){
 				let shouldUpdateGlasscord = false;
 				for(let mutation of mutationsList){
