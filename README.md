@@ -41,6 +41,8 @@ Well, glad you asked!
   
     Everything said here assumes that you're using the stable release.
     If you are using Public Test Beta (`discordptb`) or Canary (`discordcanary`), please look for the according configuration path.
+    Also, please note that if you installed Discord via Snap/Flatpak, the blur behind effect will most likely fail to load
+    (that's because the `xprop` tool is not available to the app container).
 - Put the `glasscord.js` file inside that folder.
 - If you are on Windows, you should also put the `ewc.asar` file inside that folder.
 - If you are on Linux, you should make sure that you have the `xprop` package installed.
