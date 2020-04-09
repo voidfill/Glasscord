@@ -29,6 +29,8 @@ Well, glad you asked!
 - First of all, you need to download and install a CSS loader of your choice.
   We recommend using [BeautifulDiscord](https://github.com/leovoel/BeautifulDiscord) or [EnhancedDiscord](https://github.com/joe27g/EnhancedDiscord), but Glasscord works with other loaders and mods too.
   After you installed the CSS loader properly, you can continue following this guide.
+  
+  If you installed EnhancedDiscord, you MUST install our custom `css_loader.js` into your `EnhancedDiscord/plugins` folder by overriding the stock one.
 - Download this GitHub repository or look in the Releases section for stable releases to download.
   If you downloaded a zip file, extract it to have convenient access to its files.
 - Locate your Discord Desktop Core module folder.
@@ -81,20 +83,6 @@ Please take a look at the `glasscord_example.theme.css` file to better understan
 
 Here's a straightforward CSS properties explaination. Let's go through them one by one; shall we?
 
-### `--glasscord-enable`
-#### accepts a `bool`; defaults to `false`
-This is the global switch. Turn it off, and Glasscord is off too.
-
-### `--glasscord-tint`
-#### accepts a `color`; defaults to `#00000000` which is transparent
-Global background color of the Discord window.
-
-On Windows it's set via the compositor; it's set via Electron otherwise.
-
-On 99% of cases, it will behave the same as if you included `body { background-color: color; }` on your CSS file.
-
-Nobody is sure if this will prove useful later, but it's here anyway.
-
 ### `--glasscord-win-blur` (Windows)
 #### accepts a value between those ones: `acrylic`, `blurbehind`, `transparent`; defaults to `acrylic`
 Sets the blur type on Windows.
@@ -138,6 +126,10 @@ Tells the window compositor whether to blur behind Discord or not.
 You should also be running a supported window compositor, and Glasscord currently only supports KWin.
 
 You can still manually blur Discord's window via Compiz, Compton and similar compositors which support blurring windows manually.
+
+#### Deprecated CSS variables
+- `--glasscord-enable` was deprecated: it only really worked on Windows.
+- `--glasscord-tint` was deprecated: it was basically a super buggy alias to `body { background-color: [...]; }`.
 
 ## I want to contribute to this madness!
 Did you find a bug? File it in the issues section!

@@ -13,9 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+'use strict';
 
 const electron = require('electron');
 const path = require('path');
+const _glasscord_version = '0.0.5'; // TODO: find a more stylish way to define the version
 
 if(process.platform == 'win32'){
 	try{
@@ -48,259 +50,83 @@ function debounce(func, wait, immediate){
 	};
 }
 
-/*
- * The BrowserWindow override class
- * This is the core of Glasscord.
- */
-class BrowserWindow extends electron.BrowserWindow {
+class Glasscord{
 	
-	/**
-	 * Glasscord hook main constructor
-	 * This sets up most of the things
-	 * Notice, however, that a lot of code is split into methods.
-	 */
-	constructor(originalOptions) {
-		let _originalOptions = {... originalOptions };
-		if (!originalOptions || !originalOptions.webPreferences || !originalOptions.title)
-			return super(originalOptions);
-
-		if(process.platform != 'win32')
-			originalOptions.transparent = true;
-
-		let bgColor;
-		if(originalOptions.backgroundColor)
-			bgColor = originalOptions.backgroundColor.replace('#','');
-		else
-			bgColor = 'FFFFFFFF'; // Assume Electron's default color, which is white
-
-		let tintRaw;
-		if(bgColor.length == 6)
-			tintRaw = BrowserWindow._glasscord_RGBHexStringToARGBColorArray(bgColor);
-		else
-			tintRaw = BrowserWindow._glasscord_ARGBHexStringToColorArray(bgColor);
-
-		super(originalOptions);
-		// Now we can use 'this', so we'll set object properties from now on
-		this._glasscord_exposeToDevTools();
-		this._backgroundColor = originalOptions.backgroundColor || '#ffffffff'; // macOS workaround epilepsy mitigation
-		
-		this._glasscord_enabled = false;
-		
-		this._glasscord_tint_stock_opaque = BrowserWindow._glasscord_ARGBcolorArrayToHexString(BrowserWindow._glasscord_opacify(tintRaw, 255));
-
-		// we should preserve transparency if it's there; otherwise we can just make the color fully transparent
-		this._glasscord_tint_stock_transparent = BrowserWindow._glasscord_ARGBcolorArrayToHexString(
-			tintRaw[0] == 255 ? BrowserWindow._glasscord_opacify(tintRaw, 0) : tintRaw
-		);
-
-		this._glasscord_tint = this._glasscord_tint_stock_transparent;
-		
-		if(process.platform == 'win32'){
-			// Windows-only properties
-			this._glasscord_win32_type = 'acrylic'; // acrylic, blurbehind, transparent
-			this._glasscord_win32_performance_mode = true;
+	constructor(win){
+		Object.defineProperty(this, 'win', {get: function() { return win; }});
+		if(process.platform == 'win32'){ // Windows-only properties
+			this._win32_type = 'none';
+			this._win32_performance_mode = true;
 		}
 		
-		if(process.platform == 'linux'){
-			// Linux-only properties
-			this._glasscord_linux_blur = true; // true, false
+		if(process.platform == 'linux'){ // Linux-only properties
+			this._linux_blur = false;
 		}
 		
-		if(process.platform == 'darwin'){
-			// Mac-only properites
-			this._glasscord_macos_vibrancy = null; // Vibrancy
+		if(process.platform == 'darwin'){ // Mac-only properites
+			this._macos_vibrancy = null;
 		}
-		
-		this.invokedOptions = originalOptions;
-		this._invokedOptions = _originalOptions;
 		
 		// Let's register our event listeners now.
-		this._glasscord_eventListener();
-	}
-
-	/**
-	 * We have to hook into setBackgroundColor so we can provide transparency
-	 *   when Glasscord is enabled. This method does the job.
-	 */
-	setBackgroundColor(backgroundColor){
-		if(this._backgroundColor == backgroundColor) return; // Compare against the cached value (macOS workaround epilepsy mitigation)
-		
-		this._glasscord_log('Initial background color: ' + backgroundColor, 'log');
-		// strip the hash char
-		backgroundColor = backgroundColor.replace('#','');
-		let wasRgb = false;
-		// check if the color is RGB; if it is, use the special function
-		if(backgroundColor.length == 6){
-			backgroundColor = BrowserWindow._glasscord_RGBHexStringToARGBColorArray(backgroundColor);
-			wasRgb = true;
-		}else
-			backgroundColor = BrowserWindow._glasscord_ARGBHexStringToColorArray(backgroundColor);
-		
-		// For some reason, on Linux, if your tint is fully opaque and you come
-		// from a fully transparent one, a black opaque tint is applied in every
-		// case. A workaround is applying the same color with opacity 99% before
-		// cranking this one up to 100%.
-		if(process.platform == 'linux'){
-			if(backgroundColor[0] == 255){
-				let fixupBgColor = Array.from(backgroundColor);
-				fixupBgColor[0] = 254;
-				super.setBackgroundColor(BrowserWindow._glasscord_ARGBcolorArrayToHexString(fixupBgColor));
-			}
-		}
-		
-		if(this._glasscord_enabled){
-			if(wasRgb){
-				// we will proceed to append stuff now
-				let currentTint = BrowserWindow._glasscord_ARGBHexStringToColorArray(this._glasscord_tint);
-				backgroundColor[0] = currentTint[0];
-			}
-		}
-		
-		backgroundColor = BrowserWindow._glasscord_ARGBcolorArrayToHexString(backgroundColor, false);
-		// append the hash char again
-		backgroundColor = '#' + backgroundColor;
-		this._glasscord_log('Final background color: ' + backgroundColor, 'log');
-		super.setBackgroundColor(backgroundColor);
-		this._backgroundColor = backgroundColor; // Cache a value (macOS workaround epilepsy mitigation)
-		
-		// It seems that Electron is retarded also on macOS. Since it won't update the background
-		// unless someone causes the window to refresh, let's refresh it with a lame trick
-		if(process.platform == 'darwin'){
-			let bounds = this.getBounds();
-			bounds.height += 1;
-			this.setBounds(bounds);
-			bounds.height -= 1;
-			this.setBounds(bounds);
-		}
-	}
-
-	/**
-	 * We have to hook into show and showInactive to blur the background if it's needed.
-	 */
-	show(){
-		super.show();
-		this._glasscord_showHook();
-	}
-
-	showInactive(){
-		super.showInactive();
-		this._glasscord_showHook();
-	}
-	
-	/**
-	 * This method enables Glasscord.
-	 * It then calls the update method to apply transparency and blurriness
-	 */
-	glasscord_enable(){
-		this._glasscord_log("Enabled!", 'log');
-		
-		this._glasscord_enabled = true;
-		
-		this.glasscord_update();
+		this._eventListener();
 	}
 	
 	/**
 	 * This method updates Glasscord's perks according to the current properties
 	 */
-	glasscord_update(){
-		if(!this._glasscord_enabled) return;
-		this._glasscord_log("Updated!", 'log');
-		
+	update(){
 		if(process.platform == 'win32'){
-			this.setBackgroundColor('#00000000');
-			this._glasscord_win32(this._glasscord_win32_type);
+			this._win32(this._win32_type);
 			return;
 		}
 		
-		if(process.platform == 'darwin')
-			this.setVibrancy(this._glasscord_macos_vibrancy);
-		
 		if(process.platform == 'linux')
-			this._glasscord_linux_requestBlur(this._glasscord_linux_blur);
-		
-		this.setBackgroundColor(this._glasscord_tint);
-	}
-	
-	/**
-	 * This method disables Glasscord and reverts blurriness and transparency
-	 */
-	glasscord_disable(){
-		this._glasscord_log("Disabled!", 'log');
-		this._glasscord_enabled = false;
-		
-		if(process.platform == 'win32'){
-			ewc.disable(this, parseInt(this._glasscord_tint_stock.replace('#', ''), 16));
-		}
+			this._linux_requestBlur(this._linux_blur);
 		
 		if(process.platform == 'darwin')
-			this.setVibrancy(null);
+			this.setVibrancy(this._macos_vibrancy);
 		
-		if(process.platform == 'linux')
-			this._glasscord_linux_requestBlur(false);
-		
-		this.setBackgroundColor(this._glasscord_tint_stock_opaque);
+		this._log("Updated!", 'log');
 	}
 	
 	// Methods for private use -- don't call them from outside, please
 	
 	/**
-	 * Useful method to dump what Glasscord is storing.
+	 * Glasscord's hook method
 	 */
-	_glasscord_dumpvars(){
-		let dumpMessage = "Properties: " + JSON.stringify(
-			{
-				enabled: this._glasscord_enabled,
-				tint_stock_opaque: this._glasscord_tint_stock_opaque,
-				tint_stock_transparent: this._glasscord_tint_stock_transparent,
-				tint: this._glasscord_tint,
-				win32_type: this._glasscord_win32_type || null,
-				win32_performance_mode: this._glasscord_win32_performance_mode || null,
-				linux_blur: this._glasscord_linux_blur || null,
-				macos_vibrancy: this._glasscord_macos_vibrancy || null
-			}
-		);
-		this._glasscord_log(dumpMessage, 'log');
-	}
-	
-	/**
-	 * Glasscord's show hook method
-	 * It will just call the variable update routine, ideally to get variables from the CSS theme.
-	 * So it is async.
-	 */
-	_glasscord_showHook(){
-		this._glasscord_variableUpdate();
-		this._glasscord_watchdog();
+	_hook(){
+		this._defineGlasscordProperty();
+		this._watchdog();
 	}
 	
 	/**
 	 * This is Glasscord's event listener. Every fired event gets listened here.
 	 */
-	_glasscord_eventListener(){
+	_eventListener(){
 		// Expose event listeners for controller plugins
-		electron.ipcMain.on('glasscord_on', () => { this.glasscord_enable(); });
-		electron.ipcMain.on('glasscord_off', () => { this.glasscord_disable(); });
-		electron.ipcMain.on('glasscord_refresh_view', () => {this.glasscord_update(); });
-		electron.ipcMain.on('glasscord_refresh_variables', () => {this._glasscord_log('IPC requested update', 'log'); this._glasscord_variableUpdate(); });
+		electron.ipcMain.on('glasscord_refresh', () => {
+			this._log('IPC requested update', 'log');
+			this._updateVariables();
+		});
 		// Everything else can be controlled via CSS styling
 		
-		// Work around an Electron(?) bug that only happens on Linux/Mac
-		this.webContents.on('devtools-closed', () => {
-			this.setBackgroundColor("#01000000");
-			this.glasscord_update();
+		// Hook when the window is loaded
+		this.win.webContents.on('dom-ready', () => {
+			this._hook();
 		});
 		
 		// Windows' performance mode toggle
 		if(process.platform == 'win32'){
-			const lessCostlyBlurWin = debounce(() => {this._glasscord_win32('blurbehind')}, 50, true);
-			const moreCostlyBlurWin = debounce(() => {this._glasscord_win32('acrylic')}, 50);
-			this.on('move', () => {
-				if(this._glasscord_win32_type == 'acrylic' && this._glasscord_win32_performance_mode){
+			const lessCostlyBlurWin = debounce(() => {this._win32('blurbehind')}, 50, true);
+			const moreCostlyBlurWin = debounce(() => {this._win32('acrylic')}, 50);
+			this.win.on('move', () => {
+				if(this._win32_type == 'acrylic' && this._win32_performance_mode){
 					lessCostlyBlurWin();
 					moreCostlyBlurWin();
 				}
 			});
-			this.on('resize', () => {
-				if(this._glasscord_win32_type == 'acrylic' && this._glasscord_win32_performance_mode){
+			this.win.on('resize', () => {
+				if(this._win32_type == 'acrylic' && this._win32_performance_mode){
 					lessCostlyBlurWin();
 					moreCostlyBlurWin();
 				}
@@ -312,13 +138,8 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * Method to spawn a watchdog in the Discord window
 	 * This way we can watch for style changes and update Glasscord accordingly
 	 */
-	_glasscord_watchdog(){
-		this.webContents.executeJavaScript(`(function(){
-			const options = {
-				childList: true,
-				subtree: true
-			};
-			const targetNode = document.head;
+	_watchdog(){
+		this.win.webContents.executeJavaScript(`(function(){
 			const callback = function(mutationsList, observer){
 				let shouldUpdateGlasscord = false;
 				for(let mutation of mutationsList){
@@ -349,12 +170,11 @@ class BrowserWindow extends electron.BrowserWindow {
 				}
 			
 				if(shouldUpdateGlasscord){
-					window.require('electron').ipcRenderer.send('glasscord_refresh_variables');
+					window.require('electron').ipcRenderer.send('glasscord_refresh');
 				}
 			}
-			
 			const observer = new MutationObserver(callback);
-			observer.observe(targetNode, options);
+			observer.observe(document.head, {childList: true, subtree: true});
 		}())`);
 	}
 	
@@ -364,93 +184,66 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * This function is a void that runs async code, so keep that in mind!
 	 * Also, keep in mind it calls enable() or disable() at its end!
 	 */
-	_glasscord_variableUpdate(){
+	_updateVariables(){
 		let promises = [];
 		
-		promises.push(this._glasscord_getCssProp('--glasscord-tint').then(tint => {
-			if(tint != null){
-				this._glasscord_CssColorToARGB(tint).then(argb => {
-					this._glasscord_tint = BrowserWindow._glasscord_ARGBcolorArrayToHexString(argb, true);
-				});
-				return;
-			}
-			this._glasscord_tint = this._glasscord_tint_stock_transparent;
-		}));
-		
 		if(process.platform == 'win32'){
-			promises.push(this._glasscord_getCssProp('--glasscord-win-blur').then(blurType => {
+			promises.push(this._getCssProp('--glasscord-win-blur').then(blurType => {
 				if(blurType != null){
-					this._glasscord_win32_type = blurType;
+					this._win32_type = blurType;
 					return;
 				}
-				this._glasscord_win32_type = 'acrylic';
+				this._win32_type = 'none';
 			}));
 		
-			promises.push(this._glasscord_getCssProp('--glasscord-win-performance-mode').then(mode => {
+			promises.push(this._getCssProp('--glasscord-win-performance-mode').then(mode => {
 				if(mode){
 					switch(mode){
 						case "true":
 						default:
-							this._glasscord_win32_performance_mode = true;
+							this._win32_performance_mode = true;
 							break;
 						case "false":
-							this._glasscord_win32_performance_mode = false;
+							this._win32_performance_mode = false;
 							break; 
 						}
 					return;
 				}
-				this._glasscord_win32_performance_mode = true;
+				this._win32_performance_mode = true;
 			}));
 		}
 		
 		if(process.platform == 'darwin'){
-			promises.push(this._glasscord_getCssProp('--glasscord-macos-vibrancy').then(vibrancy => {
+			promises.push(this._getCssProp('--glasscord-macos-vibrancy').then(vibrancy => {
 				if(vibrancy != null){
-					if(vibrancy == "none") this._glasscord_macos_vibrancy = null;
-					else this._glasscord_macos_vibrancy = vibrancy;
+					if(vibrancy == "none") this._macos_vibrancy = null;
+					else this._macos_vibrancy = vibrancy;
 					return;
 				}
-				this._glasscord_macos_vibrancy = null;
+				this._macos_vibrancy = null;
 			}));
 		}
 		
 		if(process.platform == 'linux'){
-			promises.push(this._glasscord_getCssProp('--glasscord-linux-blur').then(mode => {
+			promises.push(this._getCssProp('--glasscord-linux-blur').then(mode => {
 				if(mode){
 					switch(mode){
 						case "true":
 						default:
-							this._glasscord_linux_blur = true;
+							this._linux_blur = true;
 							break;
 						case "false":
-							this._glasscord_linux_blur = false;
+							this._linux_blur = false;
 							break; 
 					}
 					return;
 				}
-				this._glasscord_linux_blur = true;
+				this._linux_blur = false;
 			}));
 		}
 		
 		Promise.all(promises).then(res => {
-			// this one will get checked last for __tactical advantage__
-			this._glasscord_getCssProp('--glasscord-enable').then(
-				mode => {
-					if(mode != null){
-						switch(mode){
-						case "true":
-							this.glasscord_enable();
-							break;
-						case "false":
-						default:
-							this.glasscord_disable();
-							break; 
-						}
-						return;
-					}
-					this.glasscord_disable(); // if mode is undefined, disable it
-				}
-			);
+			this.update();
 		});
 	}
 	
@@ -458,35 +251,27 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * This method handles blur and transparency on Windows.
 	 * There's nothing special about it, really.
 	 */
-	_glasscord_win32(type){
-		let win32_tint = BrowserWindow._glasscord_ARGBcolorArrayToInt(
-			BrowserWindow._glasscord_ARGBtoABGR(
-				BrowserWindow._glasscord_ARGBHexStringToColorArray(this._glasscord_tint)
-			)
-		);
+	_win32(type){
 		switch(type){
 			case 'acrylic':
-				if(win32_tint >>> 24 == 0)
-					win32_tint |= 0x01000000; // FUCK WINDOWS.
-				ewc.setAcrylic(this, win32_tint);
+				ewc.setAcrylic(this.win, 0x01000000);
 				break;
 			case 'blurbehind':
-				ewc.setBlurBehind(this, win32_tint);
+				ewc.setBlurBehind(this.win, 0x00000000);
 				break;
 			case 'transparent':
-				ewc.setTransparentGradient(this, win32_tint);
+				ewc.setTransparentGradient(this.win, 0x00000000);
+				break;
+			case 'none':
+			default:
+				ewc.disable(this.win, 0xff000000);
 				break;
 		}
 	}
 	
-	_glasscord_linux_requestBlur(mode){
+	_linux_requestBlur(mode){
 		if(mode && process.env.XDG_SESSION_TYPE != 'x11'){
-			electron.dialog.showMessageBoxSync({
-				type: 'warning',
-				title: 'Glasscord',
-				message: 'You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!',
-				buttons: ['Alexa, play Despacito']
-			});
+			this._log("You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!", 'log');
 			return;
 		}
 		
@@ -495,12 +280,7 @@ class BrowserWindow extends electron.BrowserWindow {
 			let xprop;
 			execFile('which', ['xprop'], (error,stdout,stderr) => {
 				if(error){
-					electron.dialog.showMessageBoxSync({
-					type: 'error',
-					title: 'Glasscord',
-					message: 'Your system is missing the xprop tool. Please install it to be able to request the frosted glass effect!',
-					buttons: ['Ahoy!']
-					});
+					this._log("Your system is missing the xprop tool (perhaps we're in a Snap/Flatpak container?). Please make it available to Discord to be able to request the frosted glass effect!", 'log');
 					return;
 				}
 				xprop = stdout.trim();
@@ -510,11 +290,11 @@ class BrowserWindow extends electron.BrowserWindow {
 					if(error) return;
 					switch(stdout.trim()){
 						case 'KWin':
-							this._glasscord_linux_kwin_requestBlur(mode);
+							this._linux_kwin_requestBlur(mode);
 							break;
 						default:
 							if(mode)
-								this._glasscord_log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
+								this._log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
 							break;
 					}
 				});
@@ -526,10 +306,10 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * This method handles blurring on KWin
 	 * Sorry, Wayland users (for now) :C
 	 */
-	_glasscord_linux_kwin_requestBlur(mode){
+	_linux_kwin_requestBlur(mode){
 		if(process.env.XDG_SESSION_TYPE != 'x11') return;
 		
-		const xid = this.getNativeWindowHandle().readUInt32LE().toString(16);
+		const xid = this.win.getNativeWindowHandle().readUInt32LE().toString(16);
 		const remove = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -remove _KDE_NET_WM_BLUR_BEHIND_REGION -id 0x' + xid;
 		const request = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 0 -id 0x' + xid;
 		
@@ -542,23 +322,42 @@ class BrowserWindow extends electron.BrowserWindow {
 	 * Handy method to expose this object to the window.
 	 * It is basically a shorthand for require('electron').remote. yadda yadda
 	 */
-	_glasscord_exposeToDevTools(){
-		this.webContents.executeJavaScript("window.glasscord = window.require('electron').remote.getCurrentWindow();");
+	_exposeToDevTools(){
+		this.win.webContents.executeJavaScript("window.glasscord = window.require('electron').remote.getCurrentWindow().glasscord;");
+	}
+	
+	_defineGlasscordProperty(){
+		this.win.webContents.executeJavaScript(`window.glasscord = '${_glasscord_version}';`);
 	}
 	
 	/**
 	 * Another handy method to log directly to DevTools
 	 */
-	_glasscord_log(message, level){
-		this.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:initial;font-weight:normal;');");
+	_log(message, level){
+		this.win.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:initial;font-weight:normal;');");
+	}
+	
+	/**
+	 * Useful method to dump what Glasscord is storing.
+	 */
+	_dumpvars(){
+		let dumpMessage = "Properties: " + JSON.stringify(
+			{
+				win32_type: this._win32_type || null,
+				win32_performance_mode: this._win32_performance_mode || null,
+				linux_blur: this._linux_blur || null,
+				macos_vibrancy: this._macos_vibrancy || null
+			}
+		);
+		this._log(dumpMessage, 'log');
 	}
 	
 	/**
 	 * General method to get CSS properties from themes.
 	 * Hacky but it does the job.
 	 */
-	_glasscord_getCssProp(propName){
-		return this.webContents.executeJavaScript(`(function(){
+	_getCssProp(propName){
+		return this.win.webContents.executeJavaScript(`(function(){
 			let flag = getComputedStyle(document.documentElement).getPropertyValue('${propName}');
 			if(flag)
 				return flag.trim().replace('"','');
@@ -567,95 +366,26 @@ class BrowserWindow extends electron.BrowserWindow {
 			return null;
 		});
 	}
-	
-	/**
-	 * CSS color parsing method
-	 * taken straight from StackOverflow
-	 * modified a bit tho
-	 */
-	_glasscord_CssColorToRGBA(col){
-		return this.webContents.executeJavaScript(`(function(){
-		let col = \`${col}\`;
-		let canvas = document.createElement('canvas');
-		canvas.width = canvas.height = 1;
-		let ctx = canvas.getContext('2d');
+}
 
-		ctx.clearRect(0, 0, 1, 1);
-		// In order to detect invalid values,
-		// we can't rely on col being in the same format as what fillStyle is computed as,
-		// but we can ask it to implicitly compute a normalized value twice and compare.
-		ctx.fillStyle = '#000';
-		ctx.fillStyle = col;
-		let computed = ctx.fillStyle;
-		ctx.fillStyle = '#fff';
-		ctx.fillStyle = col;
-		if (computed !== ctx.fillStyle) return; // invalid color
-		ctx.fillRect(0, 0, 1, 1);
-		return [ ... ctx.getImageData(0, 0, 1, 1).data ];
-		}())`);
-	}
-	
-	/**
-	 * Shorthand to get an ARGB color from a CSS value
-	 */
-	_glasscord_CssColorToARGB(col){
-		return this._glasscord_CssColorToRGBA(col).then(res => {
-			res.unshift(res.pop());
-			return res;
-		});
-	}
-	
-	static _glasscord_ARGBcolorArrayToInt(col){
-		return ((
-			(col[0] << 24 >>> 0) |
-			(col[1] << 16 >>> 0) |
-			(col[2] << 8 >>> 0) |
-			(col[3] >>> 0)
-		) >>> 0);
-	}
-	
-	/**
-	 * Simple color array to hex string converter
-	 */
-	static _glasscord_ARGBcolorArrayToHexString(col, prependHash = true){
-		return (prependHash ? '#' : '') + BrowserWindow._glasscord_ARGBcolorArrayToInt(col).toString(16).padStart(8, '0');
-	}
-	
-	static _glasscord_ARGBHexStringToColorArray(col){
-		let colRaw = parseInt(col.replace('#',''), 16);
-		return [
-			(colRaw & 0xff000000) >>> 24,
-			(colRaw & 0x00ff0000) >>> 16,
-			(colRaw & 0x0000ff00) >>> 8,
-			(colRaw & 0x000000ff)
-		];
-	}
-	
-	static _glasscord_RGBHexStringToARGBColorArray(col){
-		let colRaw = parseInt(col.replace('#',''), 16);
-		return [
-			255,
-			(colRaw & 0xff0000) >>> 16,
-			(colRaw & 0x00ff00) >>> 8,
-			(colRaw & 0x0000ff)
-		];
-	}
-	
-	static _glasscord_ARGBtoABGR(col){
-		return [
-			col[0], // alpha
-			col[3], // blue
-			col[2], // green
-			col[1] // red
-		];
-	}
-	
-	static _glasscord_opacify(col, opacity){
-		let newCol = Array.from(col);
-		newCol[0] = opacity;
-		return newCol;
+/*
+ * The BrowserWindow override class
+ * This is the core of Glasscord.
+ */
+class BrowserWindow extends electron.BrowserWindow {
+	constructor(originalOptions) {
+		if(process.platform != 'win32') originalOptions.transparent = true;
+		originalOptions.backgroundColor = '#00000000'; 
+		super(originalOptions);
+		new Glasscord(this);
 	}
 
+	/**
+	 * Let's stub setBackgroundColor because it's way too buggy. Use the CSS 'body' selector instead.
+	 */
+	setBackgroundColor(backgroundColor){
+		return;
+	}
 }
 
 // from EnhancedDiscord -- thanks folks!

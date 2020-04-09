@@ -50,7 +50,7 @@ module.exports = new Plugin({
             }
             window.customCss.innerHTML = css;
             this.info('Custom CSS loaded!', window.customCss);
-            window.require('electron').ipcRenderer.send('glasscord_refresh_variables');
+            window.require('electron').ipcRenderer.send('glasscord_refresh');
 
             if (window.cssWatcher == null) {
                 window.cssWatcher = fs.watch(cssPath, { encoding: 'utf-8' },
@@ -58,7 +58,7 @@ module.exports = new Plugin({
                     if (eventType == 'change') {
                         readFile(cssPath).then(newCss => {
                             window.customCss.innerHTML = newCss;
-                            window.require('electron').ipcRenderer.send('glasscord_update');
+                            window.require('electron').ipcRenderer.send('glasscord_refresh');
                         });
                     }
                 });
