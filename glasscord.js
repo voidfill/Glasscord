@@ -54,6 +54,9 @@ class Glasscord{
 	
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
+		// Define the property early on, because some CSS loaders load before us
+		this._defineGlasscordProperty();
+		
 		if(process.platform == 'win32'){ // Windows-only properties
 			this._win32_type = 'none';
 			this._win32_performance_mode = true;
