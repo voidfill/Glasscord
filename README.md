@@ -45,8 +45,7 @@ Well, glad you asked!
     If you are using Public Test Beta (`discordptb`) or Canary (`discordcanary`), please look for the according configuration path.
     Also, please note that if you installed Discord via Snap/Flatpak, the blur behind effect will most likely fail to load
     (that's because the `xprop` tool is not available to the app container).
-- Put the `glasscord.js` file inside that folder.
-- If you are on Windows, you should also put the `ewc.asar` file inside that folder.
+- Put the `glasscord.asar` file inside that folder.
 - If you are on Linux, you should make sure that you have the `xprop` package installed.
 - Edit the `index.js` file which was already in that folder.
   
@@ -57,11 +56,11 @@ Well, glad you asked!
   ```
   should become
   ```js
-  require('./glasscord.js');
+  require('./glasscord.asar');
   // THE TEXT BELOW IS JUST AN EXAMPLE OF WHAT CAN BE INSIDE THE INDEX.JS FILE -- DO NOT COPY
   module.exports = require('your other awesome mods or the core.asar from Discord');
   ```
-  so you really have to write `require('./glasscord.js');` at the **absolute beginning** of that file.
+  so you really have to write `require('./glasscord.asar');` at the **absolute beginning** of that file.
 - **If you forgot to install a CSS loader and you've noticed it now because of this sentence written in bold, please do it and then repeat the previous step!**
 - You can now start Discord and Glasscord would be running!
   Please read the paragraph below to know more about how to use this tool.
