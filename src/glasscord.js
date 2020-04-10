@@ -20,7 +20,7 @@ const electron = require('electron');
 
 if(process.platform == 'win32'){
 	try{
-		var ewc = process.arch == 'x64' ? require('./libs/ewc64.asar') : require('./libs/ewc.asar');
+		var ewc = require('./libs/ewc');
 	} catch (e) {
 		electron.dialog.showMessageBoxSync({
 			type: 'error',
@@ -69,7 +69,7 @@ module.exports = class Glasscord{
 			this._linux_requestBlur(this._linux_blur);
 		
 		if(process.platform == 'darwin')
-			this.setVibrancy(this._macos_vibrancy);
+			this.win.setVibrancy(this._macos_vibrancy);
 		
 		this._log("Updated!", 'log');
 	}
