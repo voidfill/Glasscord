@@ -19,6 +19,9 @@ const Glasscord = require('./glasscord.js');
 const electron = require('electron');
 const path = require('path');
 
+// Require our version checker
+require('./version_check.js')();
+
 /*
  * The BrowserWindow override class
  * This is the core of Glasscord.
