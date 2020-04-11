@@ -17,61 +17,44 @@
 
 const _glasscord_version = '0.0.5'; // TODO: find a more stylish way to define the version
 const electron = require('electron');
+const fs = require('fs');
+const path = require('path');
 
-if(process.platform == 'win32'){
-	try{
-		var ewc = require('./libs/ewc');
-	} catch (e) {
-		electron.dialog.showMessageBoxSync({
-			type: 'error',
-			title: 'Glasscord',
-			message: 'The EWC dependency is either missing, corrupt or not placed in the correct folder!',
-			buttons: ['Alexa, play Despacito']
-		});
-		process.exit(1);
-	}
+// Zack's doing
+function isEmpty(obj) {
+  if (obj == null || obj == undefined || obj == "") return true;
+  if (typeof(obj) !== "object") return false;
+  if (Array.isArray(obj)) return obj.length == 0;
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) return false;
+  }
+  return true;
 }
 
 module.exports = class Glasscord{
+	
+	modules = [];
 	
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
 		// Define the property early on, because some CSS loaders load before us
 		this._defineGlasscordProperty();
 		
-		if(process.platform == 'win32'){ // Windows-only properties
-			this._win32_type = 'none';
-			this._win32_performance_mode = true;
-		}
-		
-		if(process.platform == 'linux'){ // Linux-only properties
-			this._linux_blur = false;
-		}
-		
-		if(process.platform == 'darwin'){ // Mac-only properites
-			this._macos_vibrancy = null;
+		// Let's read our modules now
+		let dirFiles = fs.readdirSync(path.join(__dirname, "modules"));
+		for(let file of dirFiles){
+			if(file.endsWith(".js")){
+				let module = require(path.join(__dirname, "modules", file));
+				if(!isEmpty(module)){
+					if(module.platform && module.platform != process.platform) continue;
+					if(module.app && module.app != this._defineApp()) continue;
+					this.modules.push(new module(this));
+				}
+			}
 		}
 		
 		// Let's register our event listeners now.
 		this._eventListener();
-	}
-	
-	/**
-	 * This method updates Glasscord's perks according to the current properties
-	 */
-	update(){
-		if(process.platform == 'win32'){
-			this._win32(this._win32_type);
-			return;
-		}
-		
-		if(process.platform == 'linux')
-			this._linux_requestBlur(this._linux_blur);
-		
-		if(process.platform == 'darwin')
-			this.win.setVibrancy(this._macos_vibrancy);
-		
-		this._log("Updated!", 'log');
 	}
 	
 	// Methods for private use -- don't call them from outside, please
@@ -99,24 +82,6 @@ module.exports = class Glasscord{
 		this.win.webContents.on('dom-ready', () => {
 			this._hook();
 		});
-		
-		// Windows' performance mode toggle
-		if(process.platform == 'win32'){
-			const lessCostlyBlurWin = Glasscord.debounce(() => {this._win32('blurbehind')}, 50, true);
-			const moreCostlyBlurWin = Glasscord.debounce(() => {this._win32('acrylic')}, 50);
-			this.win.on('move', () => {
-				if(this._win32_type == 'acrylic' && this._win32_performance_mode){
-					lessCostlyBlurWin();
-					moreCostlyBlurWin();
-				}
-			});
-			this.win.on('resize', () => {
-				if(this._win32_type == 'acrylic' && this._win32_performance_mode){
-					lessCostlyBlurWin();
-					moreCostlyBlurWin();
-				}
-			});
-		}
 	}
 	
 	/**
@@ -168,140 +133,21 @@ module.exports = class Glasscord{
 	 * This is the method that gets called whenever a variable update is requested.
 	 * It is DARN IMPORTANT to keep ALL the variables up to date!
 	 * This function is a void that runs async code, so keep that in mind!
-	 * Also, keep in mind it calls enable() or disable() at its end!
 	 */
 	_updateVariables(){
 		let promises = [];
 		
-		if(process.platform == 'win32'){
-			promises.push(this._getCssProp('--glasscord-win-blur').then(blurType => {
-				if(blurType != null){
-					this._win32_type = blurType;
-					return;
+		for(let module of this.modules){
+			if(module.cssProps && module.cssProps.length != 0){
+				for(let prop of module.cssProps){
+					promises.push(this._getCssProp(prop).then(value => module.update(prop, value)));
 				}
-				this._win32_type = 'none';
-			}));
-		
-			promises.push(this._getCssProp('--glasscord-win-performance-mode').then(mode => {
-				if(mode){
-					switch(mode){
-						case "true":
-						default:
-							this._win32_performance_mode = true;
-							break;
-						case "false":
-							this._win32_performance_mode = false;
-							break; 
-						}
-					return;
-				}
-				this._win32_performance_mode = true;
-			}));
-		}
-		
-		if(process.platform == 'darwin'){
-			promises.push(this._getCssProp('--glasscord-macos-vibrancy').then(vibrancy => {
-				if(vibrancy != null){
-					if(vibrancy == "none") this._macos_vibrancy = null;
-					else this._macos_vibrancy = vibrancy;
-					return;
-				}
-				this._macos_vibrancy = null;
-			}));
-		}
-		
-		if(process.platform == 'linux'){
-			promises.push(this._getCssProp('--glasscord-linux-blur').then(mode => {
-				if(mode){
-					switch(mode){
-						case "true":
-						default:
-							this._linux_blur = true;
-							break;
-						case "false":
-							this._linux_blur = false;
-							break; 
-					}
-					return;
-				}
-				this._linux_blur = false;
-			}));
+			}
 		}
 		
 		Promise.all(promises).then(res => {
-			this.update();
+			this._log("Updated!", 'log');
 		});
-	}
-	
-	/**
-	 * This method handles blur and transparency on Windows.
-	 * There's nothing special about it, really.
-	 */
-	_win32(type){
-		switch(type){
-			case 'acrylic':
-				ewc.setAcrylic(this.win, 0x01000000);
-				break;
-			case 'blurbehind':
-				ewc.setBlurBehind(this.win, 0x00000000);
-				break;
-			case 'transparent':
-				ewc.setTransparentGradient(this.win, 0x00000000);
-				break;
-			case 'none':
-			default:
-				ewc.disable(this.win, 0xff000000);
-				break;
-		}
-	}
-	
-	_linux_requestBlur(mode){
-		if(mode && process.env.XDG_SESSION_TYPE != 'x11'){
-			this._log("You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!", 'log');
-			return;
-		}
-		
-		if(process.env.XDG_SESSION_TYPE == 'x11'){
-			let execFile = require('child_process').execFile;
-			let xprop;
-			execFile('which', ['xprop'], (error,stdout,stderr) => {
-				if(error){
-					this._log("Your system is missing the xprop tool (perhaps we're in a Snap/Flatpak container?). Please make it available to Discord to be able to request the frosted glass effect!", 'log');
-					return;
-				}
-				xprop = stdout.trim();
-				
-				const shCommand = `${xprop} -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
-				execFile('sh', ['-c',shCommand], (error,stdout,stderr) => {
-					if(error) return;
-					switch(stdout.trim()){
-						case 'KWin':
-							this._linux_kwin_requestBlur(mode);
-							break;
-						default:
-							if(mode)
-								this._log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
-							break;
-					}
-				});
-			});
-		}
-	}
-	
-	/**
-	 * This method handles blurring on KWin
-	 * Sorry, Wayland users (for now) :C
-	 */
-	_linux_kwin_requestBlur(mode){
-		if(process.env.XDG_SESSION_TYPE != 'x11') return;
-		
-		const xid = this.win.getNativeWindowHandle().readUInt32LE().toString(16);
-		const remove = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -remove _KDE_NET_WM_BLUR_BEHIND_REGION -id 0x' + xid;
-		const request = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 0 -id 0x' + xid;
-		
-		let sys = require('sys')
-		let exec = require('child_process').exec;
-		exec(mode ? request : remove);
 	}
 	
 	/**
@@ -324,21 +170,6 @@ module.exports = class Glasscord{
 	}
 	
 	/**
-	 * Useful method to dump what Glasscord is storing.
-	 */
-	_dumpvars(){
-		let dumpMessage = "Properties: " + JSON.stringify(
-			{
-				win32_type: this._win32_type || null,
-				win32_performance_mode: this._win32_performance_mode || null,
-				linux_blur: this._linux_blur || null,
-				macos_vibrancy: this._macos_vibrancy || null
-			}
-		);
-		this._log(dumpMessage, 'log');
-	}
-	
-	/**
 	 * General method to get CSS properties from themes.
 	 * Hacky but it does the job.
 	 */
@@ -353,22 +184,9 @@ module.exports = class Glasscord{
 		});
 	}
 	
-	/**
-	* Debounce function
-	* Might come in handy, given all those bouncy events!
-	*/
-	static debounce(func, wait, immediate){
-		var timeout;
-		return function() {
-			var context = this, args = arguments;
-			var callNow = immediate && !timeout;
-			clearTimeout(timeout);
-			timeout = setTimeout(function() {
-				timeout = null;
-				if (!immediate) func.apply(context, args);
-			}, wait);
-			if (callNow) func.apply(context, args);
-		};
+	_defineApp(){
+		const app = require(path.resolve(electron.app.getAppPath(), "package.json"));
+		return app.name;
 	}
 	
 }
