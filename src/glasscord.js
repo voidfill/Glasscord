@@ -15,10 +15,10 @@
 */
 'use strict';
 
-const _glasscord_version = '0.0.5'; // TODO: find a more stylish way to define the version
 const electron = require('electron');
 const fs = require('fs');
 const path = require('path');
+const pak = require('./package.json');
 
 // Zack's doing
 function isEmpty(obj) {
@@ -159,7 +159,7 @@ module.exports = class Glasscord{
 	}
 	
 	_defineGlasscordProperty(){
-		this.win.webContents.executeJavaScript(`window.glasscord = '${_glasscord_version}';`);
+		this.win.webContents.executeJavaScript(`window.glasscord = '${pak.version}';`);
 	}
 	
 	/**
