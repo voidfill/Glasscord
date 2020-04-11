@@ -82,7 +82,7 @@ function versionCompare(v1, v2, options) {
 module.exports = function(){
 	if(path.extname(__dirname) == '.asar'){ // Are we inside an asar?
 		console.log('You are running a packaged Glasscord installation!'); // Yes.
-		let glasscordAsarName = path.join(path.dirname(__dirname), path.basename(__dirname, '.asar')); // result is whatever-the-dir/glasscord (without the .asar at the end)
+		let asarName = path.join(path.dirname(__dirname), path.basename(__dirname, '.asar')); // result is whatever-the-dir/glasscord (without the .asar at the end)
 		// CALL TO THE GITHUB RELEASES API
 		https.get('https://api.github.com/repos/AryToNeX/Glasscord/releases/latest', {headers: {'user-agent': 'glasscord-updater-' + pak.version}}, result => {
 			// Let's check the error
@@ -122,7 +122,7 @@ module.exports = function(){
 					}
 					
 					// We may want to save the data in a file with a .new extension for now.
-					let newName = glasscordAsarName + '.new';
+					let newName = asarName + '.new';
 					let fd = fs.openSync(newName, 'a');
 					result.on('data', chunk => fs.appendFileSync(fd, chunk));
 					
@@ -130,8 +130,8 @@ module.exports = function(){
 					result.on('end', () => {
 						fs.closeSync(fd); // Let's close the file
 						try{
-							fs.renameSync(glasscordAsarName + '.asar', glasscordAsarName + '.old'); // Our current .asar becomes .old
-							fs.renameSync(newName, glasscordAsarName + '.asar'); // The .new file becomes our .asar
+							fs.renameSync(asarName + '.asar', asarName + '.old'); // Our current .asar becomes .old
+							fs.renameSync(newName, asarName + '.asar'); // The .new file becomes our .asar
 						}catch(e){
 							console.log('Glasscord update failed upon file renaming!');
 						}

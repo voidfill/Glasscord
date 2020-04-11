@@ -15,7 +15,7 @@
 */
 'use strict';
 
-const Glasscord = require('./glasscord.js');
+const Main = require('./main.js');
 const electron = require('electron');
 const path = require('path');
 
@@ -37,7 +37,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		options.backgroundColor = '#00000000'; 
 		Object.assign(options, config);
 		super(options);
-		new Glasscord(this);
+		new Main(this);
 	}
 
 	/**

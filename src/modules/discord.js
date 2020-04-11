@@ -19,9 +19,9 @@ module.exports = class Discord{
 	static app = 'discord';
 	cssProps = [];
 	
-	constructor(glasscord){
-		this.glasscord = glasscord;
-		this.glasscord._log('Discord module loaded', 'log');
+	constructor(main){
+		this.main = main;
+		this.main._log('Discord module loaded', 'log');
 	}
 	
 	update(cssProp, value){

@@ -31,14 +31,14 @@ function isEmpty(obj) {
   return true;
 }
 
-module.exports = class Glasscord{
+module.exports = class Main{
 	
 	modules = [];
 	
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
 		// Define the property early on, because some CSS loaders load before us
-		this._defineGlasscordProperty();
+		this._defineProperty();
 		
 		// Let's read our modules now
 		let dirFiles = fs.readdirSync(path.join(__dirname, "modules"));
@@ -60,15 +60,15 @@ module.exports = class Glasscord{
 	// Methods for private use -- don't call them from outside, please
 	
 	/**
-	 * Glasscord's hook method
+	 * The hook method
 	 */
 	_hook(){
-		this._defineGlasscordProperty();
+		this._defineProperty();
 		this._watchdog();
 	}
 	
 	/**
-	 * This is Glasscord's event listener. Every fired event gets listened here.
+	 * This is the event listener. Every fired event gets listened here.
 	 */
 	_eventListener(){
 		// Expose event listeners for controller plugins
@@ -86,41 +86,41 @@ module.exports = class Glasscord{
 	
 	/**
 	 * Method to spawn a watchdog in the Discord window
-	 * This way we can watch for style changes and update Glasscord accordingly
+	 * This way we can watch for style changes and update everything accordingly
 	 */
 	_watchdog(){
 		this.win.webContents.executeJavaScript(`(function(){
 			window.require('electron').ipcRenderer.send('glasscord_refresh');
 			const callback = function(mutationsList, observer){
-				let shouldUpdateGlasscord = false;
+				let shouldUpdate = false;
 				for(let mutation of mutationsList){
 					if(mutation.target.nodeName.toLowerCase() == 'style'){ // text in style has changed!
-							shouldUpdateGlasscord = true;
+							shouldUpdate = true;
 							break;
 					}
 					
 					if(mutation.addedNodes.length != 0){ // some nodes were added!
 						for(let addedNode of mutation.addedNodes){
 							if(addedNode.nodeName.toLowerCase() == 'style'){
-								shouldUpdateGlasscord = true;
+								shouldUpdate = true;
 								break;
 							}
 						}
 					}
 					
-					if(shouldUpdateGlasscord) break; // don't spend other time iterating
+					if(shouldUpdate) break; // don't spend other time iterating
 				
 					if(mutation.removedNodes.length != 0){ // some nodes were removed!
 						for(let removedNode of mutation.removedNodes){
 							if(removedNode.nodeName.toLowerCase() == 'style'){
-								shouldUpdateGlasscord = true;
+								shouldUpdate = true;
 								break;
 							}
 						}
 					}
 				}
 			
-				if(shouldUpdateGlasscord){
+				if(shouldUpdate){
 					window.require('electron').ipcRenderer.send('glasscord_refresh');
 				}
 			}
@@ -158,7 +158,7 @@ module.exports = class Glasscord{
 		this.win.webContents.executeJavaScript("window.glasscord = window.require('electron').remote.getCurrentWindow().glasscord;");
 	}
 	
-	_defineGlasscordProperty(){
+	_defineProperty(){
 		this.win.webContents.executeJavaScript(`window.glasscord = '${pak.version}';`);
 	}
 	

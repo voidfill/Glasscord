@@ -19,20 +19,20 @@ module.exports = class Win32{
 	static platform = 'win32';
 	cssProps = ["--glasscord-win-blur", "--glasscord-win-performance-mode"];
 	
-	constructor(glasscord){
-		this.glasscord = glasscord;
-		this.glasscord._log('Windows compatibility module loaded', 'log');
+	constructor(main){
+		this.main = main;
+		this.main._log('Windows compatibility module loaded', 'log');
 		this._type = 'none';
 		this._performance_mode = true;
 		const lessCostlyBlurWin = Win32.debounce(() => {this._apply('blurbehind')}, 50, true);
 		const moreCostlyBlurWin = Win32.debounce(() => {this._apply('acrylic')}, 50);
-		this.glasscord.win.on('move', () => {
+		this.main.win.on('move', () => {
 			if(this._type == 'acrylic' && this._performance_mode){
 				lessCostlyBlurWin();
 				moreCostlyBlurWin();
 			}
 		});
-		this.glasscord.win.on('resize', () => {
+		this.main.win.on('resize', () => {
 			if(this._type == 'acrylic' && this._performance_mode){
 				lessCostlyBlurWin();
 				moreCostlyBlurWin();
@@ -69,17 +69,17 @@ module.exports = class Win32{
 		const ewc = require("../libs/ewc");
 		switch(type){
 			case 'acrylic':
-				ewc.setAcrylic(this.glasscord.win, 0x01000000);
+				ewc.setAcrylic(this.main.win, 0x01000000);
 				break;
 			case 'blurbehind':
-				ewc.setBlurBehind(this.glasscord.win, 0x00000000);
+				ewc.setBlurBehind(this.main.win, 0x00000000);
 				break;
 			case 'transparent':
-				ewc.setTransparentGradient(this.glasscord.win, 0x00000000);
+				ewc.setTransparentGradient(this.main.win, 0x00000000);
 				break;
 			case 'none':
 			default:
-				ewc.disable(this.glasscord.win, 0xff000000);
+				ewc.disable(this.main.win, 0xff000000);
 				break;
 		}
 	}

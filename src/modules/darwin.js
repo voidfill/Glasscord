@@ -19,13 +19,13 @@ module.exports = class Darwin{
 	static platform = 'darwin';
 	cssProps = ['--glasscord-macos-vibrancy'];
 	
-	constructor(glasscord){
-		this.glasscord = glasscord;
-		this.glasscord._log('macOS compatibility module loaded', 'log');
+	constructor(main){
+		this.main = main;
+		this.main._log('macOS compatibility module loaded', 'log');
 	}
 	
 	update(cssProp, value){
 		if(!value || value == "none") value = null;
-		this.glasscord.win.setVibrancy(value);
+		this.main.win.setVibrancy(value);
 	}
 }

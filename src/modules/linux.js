@@ -19,14 +19,14 @@ module.exports = class Linux{
 	static platform = 'linux';
 	cssProps = ["--glasscord-linux-blur"];
 	
-	constructor(glasscord){
-		this.glasscord = glasscord;
-		this.glasscord._log('Linux compatibility module loaded', 'log');
+	constructor(main){
+		this.main = main;
+		this.main._log('Linux compatibility module loaded', 'log');
 	}
 	
 	update(cssProp, value){
 		if(value && process.env.XDG_SESSION_TYPE != 'x11'){
-			this.glasscord._log("You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!", 'log');
+			this.main._log("You are not on an X11 session, therefore Glasscord can\'t request the frosted glass effect!", 'log');
 			return;
 		}
 		
@@ -35,7 +35,7 @@ module.exports = class Linux{
 			let xprop;
 			execFile('which', ['xprop'], (error,stdout,stderr) => {
 				if(error){
-					this.glasscord._log("Your system is missing the xprop tool (perhaps we're in a Snap/Flatpak container?). Please make it available to Discord to be able to request the frosted glass effect!", 'log');
+					this.main._log("Your system is missing the xprop tool (perhaps we're in a Snap/Flatpak container?). Please make it available to Discord to be able to request the frosted glass effect!", 'log');
 					return;
 				}
 				xprop = stdout.trim();
@@ -49,7 +49,7 @@ module.exports = class Linux{
 							break;
 						default:
 							if(value)
-								this.glasscord._log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
+								this.main._log("You are not running a supported window manager. Blur won't be available via Glasscord.", 'log');
 							break;
 					}
 				});
@@ -64,7 +64,7 @@ module.exports = class Linux{
 	_kwin_requestBlur(mode){
 		if(process.env.XDG_SESSION_TYPE != 'x11') return;
 		
-		const xid = this.glasscord.win.getNativeWindowHandle().readUInt32LE().toString(16);
+		const xid = this.main.win.getNativeWindowHandle().readUInt32LE().toString(16);
 		const remove = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -remove _KDE_NET_WM_BLUR_BEHIND_REGION -id 0x' + xid;
 		const request = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 0 -id 0x' + xid;
 		
