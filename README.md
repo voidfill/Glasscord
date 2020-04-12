@@ -33,9 +33,8 @@ Well, glad you asked!
   We recommend using [BeautifulDiscord](https://github.com/leovoel/BeautifulDiscord) or [EnhancedDiscord](https://github.com/joe27g/EnhancedDiscord), but Glasscord works with other loaders and mods too.
   After you installed the CSS loader properly, you can continue following this guide.
   
-  If you installed EnhancedDiscord, you MUST install our custom `css_loader.js` into your `EnhancedDiscord/plugins` folder by overriding the stock one.
-- Download this GitHub repository or look in the Releases section for stable releases to download.
-  If you downloaded a zip file, extract it to have convenient access to its files.
+  If you installed EnhancedDiscord, you MUST install our custom `css_loader.js` (you can find it on the repository) into your `EnhancedDiscord/plugins` folder by overriding the stock one.
+- Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
 - Locate your Discord Desktop Core module folder.
   - On Windows, it is `%AppData%\discord\x.x.x\modules\discord_desktop_core\`
   - On macOS, it is `~/Library/Application Support/discord/x.x.x/modules/discord_desktop_core/`
@@ -71,7 +70,7 @@ Well, glad you asked!
 ## How do I USE it?
 Assuming you already installed everything correctly, you will need to load a custom CSS theme which supports Glasscord.
 
-If you want to just try Glasscord, you can load the `glasscord_example.theme.css`.
+If you want to just try Glasscord, you can load the `glasscord_example.theme.css` (which is in the repository for you to download).
 
 Please refer to your CSS loader's documentation to know how to load CSS stylesheets.
 
