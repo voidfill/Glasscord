@@ -1,6 +1,9 @@
 # ![Glasscord](glasscord_banner.png)
 Providing composition effects to the Discord client.
 
+[![ko-fi](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/K3K3D0E0)
+[![patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://patreon.com/arytonex)
+
 [Chat with us on our Discord support server!](https://discord.gg/SftnByN)
 
 [![Chat with us on Discord](https://discordapp.com/api/guilds/696696149301657640/embed.png)](https://discord.gg/SftnByN)
