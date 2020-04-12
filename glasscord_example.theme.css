@@ -144,6 +144,11 @@
 	padding-top: 4px;
 }
 
+.premiumPromo-yVfLiA {
+	background-color: var(--background-secondary-chat);
+	backdrop-filter: blur(2px);
+}
+
 .unread-3zKkbm {
 	height: 4px;
 	width: 4px;
