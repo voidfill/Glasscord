@@ -30,7 +30,13 @@ _TL;DR: Help me I have no purpose in this life anymore_
 Well, glad you asked!
 
 - First of all, you need to download and install a CSS loader of your choice.
-  We recommend using [BeautifulDiscord](https://github.com/leovoel/BeautifulDiscord) or [EnhancedDiscord](https://github.com/joe27g/EnhancedDiscord), but Glasscord works with other loaders and mods too.
+  We can recommend (and we've tested) those client mods/CSS loaders:
+  - [BandagedBD](https://github.com/rauenzi/BetterDiscordApp)
+  - [BeautifulDiscord](https://github.com/leovoel/BeautifulDiscord)
+  - [EnhancedDiscord](https://github.com/joe27g/EnhancedDiscord)
+
+  Keep in mind that Glasscord may work with other CSS loaders and client mods too.
+  
   After you installed the CSS loader properly, you can continue following this guide.
   
   If you installed EnhancedDiscord, you MUST install our custom `css_loader.js` (you can find it on the repository) into your `EnhancedDiscord/plugins` folder by overriding the stock one.
