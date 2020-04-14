@@ -1,4 +1,4 @@
-# ![Glasscord](glasscord_banner.png)
+# ![Glasscord](images/glasscord_banner.png)
 Providing composition effects to the Discord client.
 
 [![ko-fi](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/K3K3D0E0)
@@ -8,7 +8,7 @@ Providing composition effects to the Discord client.
 
 [![Chat with us on Discord](https://discordapp.com/api/guilds/696696149301657640/embed.png)](https://discord.gg/SftnByN)
 
-![Preview](preview.png)
+![Preview](images/preview.png)
 
 ### What is it?
 Glasscord is a really simple tool that enables window composition effects (transparency and frosted glass effects) on Discord.
@@ -38,8 +38,6 @@ Well, glad you asked!
   Keep in mind that Glasscord may work with other CSS loaders and client mods too.
   
   After you installed the CSS loader properly, you can continue following this guide.
-  
-  If you installed EnhancedDiscord, you MUST install our custom `css_loader.js` (you can find it on the repository) into your `EnhancedDiscord/plugins` folder by overriding the stock one.
 - Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
 - Locate your Discord Desktop Core module folder. In the respective file paths, `x.x.x` corresponds to the version number.
   - On Windows, it is `%AppData%\discord\x.x.x\modules\discord_desktop_core\`
@@ -76,7 +74,7 @@ Well, glad you asked!
 ## How do I USE it?
 Assuming you already installed everything correctly, you will need to load a custom CSS theme which supports Glasscord.
 
-If you want to just try Glasscord, you can load the `glasscord_example.theme.css` (which is in the repository for you to download).
+If you want to just try Glasscord, you can load the `glasscord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
 
 Please refer to your CSS loader's documentation to know how to load CSS stylesheets.
 

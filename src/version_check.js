@@ -18,7 +18,7 @@
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
-const pak = require('./package.json');
+const pak = require('../package.json');
 
 // why bother requiring the 'request' module????
 function httpsGetRecursive(url, options, callback){
