@@ -66,7 +66,7 @@ module.exports = class Win32{
 	}
 	
 	_apply(type){
-		const ewc = require("../libs/ewc");
+		const ewc = require("../../lib/ewc");
 		switch(type){
 			case 'acrylic':
 				ewc.setAcrylic(this.main.win, 0x01000000);

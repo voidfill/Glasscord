@@ -19,6 +19,6 @@ const asar = require('asar');
 const glob = require('glob');
 const dest = 'glasscord.asar';
 const src = '.';
-const filenames = ['package.json', 'LICENSE', ...glob.sync('src/**')];
+const filenames = ['package.json', 'LICENSE', ...glob.sync('src/**'), ...glob.sync('lib/**')];
 
 asar.createPackageFromFiles(src, dest, filenames).then(() => console.log('done'));
