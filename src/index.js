@@ -34,7 +34,7 @@ require('./version_check.js')();
 class BrowserWindow extends electron.BrowserWindow {
 	constructor(options) {
 		if(process.platform != 'win32') options.transparent = true;
-		options.backgroundColor = '#00000000'; 
+		options.backgroundColor = '#00000000';
 		Object.assign(options, config);
 		super(options);
 		new Main(this);
