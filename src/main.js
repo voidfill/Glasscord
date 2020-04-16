@@ -18,6 +18,7 @@
 const electron = require('electron');
 const fs = require('fs');
 const path = require('path');
+const Utils = require('./utils.js');
 const pak = require('../package.json');
 
 // Zack's doing
@@ -37,23 +38,9 @@ module.exports = class Main{
 	
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
-		// Define the property early on, because some CSS loaders load before us
-		this._defineProperty();
 		
 		// Let's read our modules now
-		let dirFiles = fs.readdirSync(path.join(__dirname, "modules"));
-		for(let file of dirFiles){
-			if(file.endsWith(".js")){
-				let module = require(path.join(__dirname, "modules", file));
-				if(!isEmpty(module)){
-					if(module.platformExclude && module.platformExclude.includes(process.platform)) continue;
-					if(module.platform && !module.platform.includes(process.platform)) continue;
-					if(module.appExclude && module.appExclude.includes(this._defineApp())) continue;
-					if(module.app && !module.app.includes(this._defineApp())) continue;
-					this.modules[module.constructor.name] = new module(this);
-				}
-			}
-		}
+		this._loadModules();
 		
 		// Let's register our event listeners now.
 		this._eventListener();
@@ -70,6 +57,7 @@ module.exports = class Main{
 	 */
 	_hook(){
 		this._defineProperty();
+		this._exposeApi();
 		this._watchdog();
 	}
 	
@@ -135,6 +123,30 @@ module.exports = class Main{
 		}())`);
 	}
 	
+	_loadModules(){
+		let dirFiles = fs.readdirSync(path.join(__dirname, "modules"));
+		for(let file of dirFiles){
+			if(file.endsWith(".js")){
+				let module = require(path.join(__dirname, "modules", file));
+				if(!isEmpty(module)){
+					if(module.platformExclude.includes(process.platform)) continue;
+					if(!isEmpty(module.platform) && !module.platform.includes(process.platform)) continue;
+					if(module.appExclude.includes(this._defineApp())) continue;
+					if(!isEmpty(module.app) && !module.app.includes(this._defineApp())) continue;
+					
+					if(!isEmpty(module.defaultConfig))
+						Utils.initializeModuleConfig(module.prototype.constructor.name, module.defaultConfig, module.isCore);
+					else
+						Utils.initializeModuleConfig(module.prototype.constructor.name, null, module.isCore);
+					
+					if(!module.isCore && !Utils.isModuleEnabled(module.prototype.constructor.name)) continue;
+					this.modules[module.prototype.constructor.name] = new module(this);
+				}
+			}
+		}
+		Utils.saveConfig();
+	}
+	
 	/**
 	 * This is the method that gets called whenever a variable update is requested.
 	 * It is DARN IMPORTANT to keep ALL the variables up to date!
@@ -160,8 +172,13 @@ module.exports = class Main{
 	 * Handy method to expose this object to the window.
 	 * It is basically a shorthand for require('electron').remote. yadda yadda
 	 */
-	_exposeToDevTools(){
-		this.win.webContents.executeJavaScript("window.glasscord = window.require('electron').remote.getCurrentWindow().glasscord;");
+	_exposeApi(){
+		this.win.GlasscordApi = {
+			settings: this.config,
+			version: pak.version
+		}
+		
+		this.win.webContents.executeJavaScript("window.GlasscordApi = window.require('electron').remote.getCurrentWindow().GlasscordApi;");
 	}
 	
 	_defineProperty(){
@@ -172,7 +189,7 @@ module.exports = class Main{
 	 * Another handy method to log directly to DevTools
 	 */
 	_log(message, level){
-		this.win.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:initial;font-weight:normal;');");
+		this.win.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');");
 	}
 	
 	/**

@@ -15,14 +15,12 @@
 */
 'use strict';
 
-module.exports = class Linux{
+const Module = require('../module.js');
+
+module.exports = class Linux extends Module{
+	static isCore = true;
 	static platform = ['linux'];
 	cssProps = ["--glasscord-linux-blur"];
-	
-	constructor(main){
-		this.main = main;
-		this.main._log('Linux compatibility module loaded', 'log');
-	}
 	
 	update(cssProp, value){
 		if(value && process.env.XDG_SESSION_TYPE != 'x11'){

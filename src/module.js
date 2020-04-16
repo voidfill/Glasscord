@@ -15,15 +15,31 @@
 */
 'use strict';
 
-const Module = require('../module.js')
+const Utils = require('./utils.js');
 
-module.exports = class Darwin extends Module{
-	static isCore = true;
-	static platform = ['darwin'];
-	cssProps = ['--glasscord-macos-vibrancy'];
+module.exports = class Module{
+	static isCore = false;
+	static platform = [];
+	static platformExclude = [];
 	
-	update(cssProp, value){
-		if(!value || value == "none") value = null;
-		this.main.win.setVibrancy(value);
+	static app = [];
+	static appExclude = [];
+	
+	static defaultConfig = {};
+	
+	cssProps = [];
+	
+	constructor(main){
+		this.main = main;
+		this.config = Utils.getConfigForModule(this.constructor.name);
+		this.main._log("Module " + this.constructor.name + " loaded!", 'log');
+	}
+	
+	update(cssProp, value){}
+	
+	
+	saveConfig(){
+		Utils.setConfigForModule(this.constructor.name, this.config);
+		Utils.saveConfig();
 	}
 }

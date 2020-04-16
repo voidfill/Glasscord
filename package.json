@@ -1,7 +1,7 @@
 {
     "name": "glasscord",
     "author": "AryToNeX <me@arytonex.pw> (http://arytonex.pw)",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "Glasscord",
     "main": "src/index.js",
     "scripts": {

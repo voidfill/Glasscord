@@ -15,13 +15,15 @@
 */
 'use strict';
 
-module.exports = class Win32{
+const Module = require('../module.js')
+
+module.exports = class Win32 extends Module{
+	static isCore = true;
 	static platform = ['win32'];
 	cssProps = ["--glasscord-win-blur", "--glasscord-win-performance-mode"];
 	
 	constructor(main){
-		this.main = main;
-		this.main._log('Windows compatibility module loaded', 'log');
+		super(main);
 		this._type = 'none';
 		this._performance_mode = true;
 		const lessCostlyBlurWin = Win32.debounce(() => {this._apply('blurbehind')}, 50, true);

@@ -16,14 +16,9 @@
 'use strict';
 
 const Main = require('./main.js');
+const Utils = require('./utils.js');
 const electron = require('electron');
 const path = require('path');
-
-try{
-	var config = require('../glasscord_config.json');
-}catch(e){
-	var config = {frame: (process.platform == "linux" ? true : false)};
-}
 
 // Require our version checker
 require('./version_check.js')();
@@ -35,7 +30,8 @@ class BrowserWindow extends electron.BrowserWindow {
 	constructor(options) {
 		if(process.platform != 'win32') options.transparent = true;
 		options.backgroundColor = '#00000000';
-		Object.assign(options, config);
+		options.webPreferences.nodeIntegration = true;
+		Object.assign(options, Utils.getWindowProperties());
 		super(options);
 		new Main(this);
 	}

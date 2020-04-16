@@ -15,14 +15,11 @@
 */
 'use strict';
 
-module.exports = class Discord{
+const Module = require('../module.js')
+
+module.exports = class Discord extends Module{
 	static app = ['discord'];
 	cssProps = [];
-	
-	constructor(main){
-		this.main = main;
-		this.main._log('Discord module loaded', 'log');
-	}
 	
 	update(cssProp, value){
 		// do something

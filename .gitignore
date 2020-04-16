@@ -4,3 +4,4 @@ latest.json
 glasscord.asar
 node_modules/*
 package-lock.json
+glasscord_config.json
