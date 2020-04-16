@@ -39,11 +39,11 @@ module.exports = class Main{
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
 		
-		// Let's read our modules now
-		this._loadModules();
-		
 		// Let's register our event listeners now.
 		this._eventListener();
+		
+		// Let's read our modules now
+		this._loadModules();
 	}
 	
 	getModule(name){
@@ -56,7 +56,6 @@ module.exports = class Main{
 	 * The hook method
 	 */
 	_hook(){
-		this._defineProperty();
 		this._exposeApi();
 		this._watchdog();
 	}
@@ -84,7 +83,8 @@ module.exports = class Main{
 	 */
 	_watchdog(){
 		this.win.webContents.executeJavaScript(`(function(){
-			window.require('electron').ipcRenderer.send('glasscord_refresh');
+			const {ipcRenderer} = GlasscordApi.require('electron');
+			ipcRenderer.send('glasscord_refresh');
 			const callback = function(mutationsList, observer){
 				let shouldUpdate = false;
 				for(let mutation of mutationsList){
@@ -114,9 +114,7 @@ module.exports = class Main{
 					}
 				}
 			
-				if(shouldUpdate){
-					window.require('electron').ipcRenderer.send('glasscord_refresh');
-				}
+				if(shouldUpdate) ipcRenderer.send('glasscord_refresh');
 			}
 			const observer = new MutationObserver(callback);
 			observer.observe(document.head, {childList: true, subtree: true});
@@ -169,20 +167,15 @@ module.exports = class Main{
 	}
 	
 	/**
-	 * Handy method to expose this object to the window.
-	 * It is basically a shorthand for require('electron').remote. yadda yadda
+	 * Expose a quite handy GlasscordApi object to the renderer
 	 */
 	_exposeApi(){
-		this.win.GlasscordApi = {
-			settings: this.config,
-			version: pak.version
-		}
-		
-		this.win.webContents.executeJavaScript("window.GlasscordApi = window.require('electron').remote.getCurrentWindow().GlasscordApi;");
-	}
-	
-	_defineProperty(){
-		this.win.webContents.executeJavaScript(`window.glasscord = '${pak.version}';`);
+		this.win.webContents.executeJavaScript(`
+		window.GlasscordApi = {
+			require: (window.nodeRequire || window.require),
+			version: '${pak.version}'
+		};
+		`);
 	}
 	
 	/**
