@@ -48,7 +48,7 @@ class Utils{
 
 	static getConfigForModule(name){
 		try{
-			return this.config.modules[name];
+			return this.config.modules[name].config;
 		}catch(e){
 			return {};
 		}
