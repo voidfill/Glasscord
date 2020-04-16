@@ -20,6 +20,7 @@ const path = require('path');
 
 module.exports = class CSSLoader extends Module {
 	static defaultConfig = {cssPath: ''};
+	static appExclude = ['discord'];
 	
 	constructor(main){
 		super(main);
