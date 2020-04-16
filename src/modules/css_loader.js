@@ -19,7 +19,10 @@ const Module = require('../module.js');
 const path = require('path');
 
 module.exports = class CSSLoader extends Module {
+	static defaultConfig = {cssPath: ''};
+	
 	constructor(main){
+		super(main);
 		this.main.win.webContents.on('dom-ready', () => { this._load() });
 		if(!this.config.cssPath) this.config.cssPath = ''; // Just so we don't trigger strange stuff on the renderer
 	}
