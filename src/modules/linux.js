@@ -16,7 +16,7 @@
 'use strict';
 
 module.exports = class Linux{
-	static platform = 'linux';
+	static platform = ['linux'];
 	cssProps = ["--glasscord-linux-blur"];
 	
 	constructor(main){

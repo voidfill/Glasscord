@@ -16,7 +16,7 @@
 'use strict';
 
 module.exports = class Discord{
-	static app = 'discord';
+	static app = ['discord'];
 	cssProps = [];
 	
 	constructor(main){

@@ -33,7 +33,7 @@ function isEmpty(obj) {
 
 module.exports = class Main{
 	
-	modules = [];
+	modules = {};
 	
 	constructor(win){
 		Object.defineProperty(this, 'win', {get: function() { return win; }});
@@ -46,15 +46,21 @@ module.exports = class Main{
 			if(file.endsWith(".js")){
 				let module = require(path.join(__dirname, "modules", file));
 				if(!isEmpty(module)){
-					if(module.platform && module.platform != process.platform) continue;
-					if(module.app && module.app != this._defineApp()) continue;
-					this.modules.push(new module(this));
+					if(module.platformExclude && module.platformExclude.includes(process.platform)) continue;
+					if(module.platform && !module.platform.includes(process.platform)) continue;
+					if(module.appExclude && module.appExclude.includes(this._defineApp())) continue;
+					if(module.app && !module.app.includes(this._defineApp())) continue;
+					this.modules[module.constructor.name] = new module(this);
 				}
 			}
 		}
 		
 		// Let's register our event listeners now.
 		this._eventListener();
+	}
+	
+	getModule(name){
+		return this.modules[name] || null;
 	}
 	
 	// Methods for private use -- don't call them from outside, please
@@ -137,10 +143,10 @@ module.exports = class Main{
 	_updateVariables(){
 		let promises = [];
 		
-		for(let module of this.modules){
-			if(module.cssProps && module.cssProps.length != 0){
-				for(let prop of module.cssProps){
-					promises.push(this._getCssProp(prop).then(value => module.update(prop, value)));
+		for(let moduleName in this.modules){
+			if(this.modules[moduleName].cssProps && this.modules[moduleName].cssProps.length != 0){
+				for(let prop of this.modules[moduleName].cssProps){
+					promises.push(this._getCssProp(prop).then(value => this.modules[moduleName].update(prop, value)));
 				}
 			}
 		}

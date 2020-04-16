@@ -16,7 +16,7 @@
 'use strict';
 
 module.exports = class Win32{
-	static platform = 'win32';
+	static platform = ['win32'];
 	cssProps = ["--glasscord-win-blur", "--glasscord-win-performance-mode"];
 	
 	constructor(main){

@@ -16,7 +16,7 @@
 'use strict';
 
 module.exports = class Darwin{
-	static platform = 'darwin';
+	static platform = ['darwin'];
 	cssProps = ['--glasscord-macos-vibrancy'];
 	
 	constructor(main){
