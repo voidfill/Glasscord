@@ -82,43 +82,47 @@ module.exports = class Main{
 	 * This way we can watch for style changes and update everything accordingly
 	 */
 	_watchdog(){
-		this.win.webContents.executeJavaScript(`(function(){
-			const {ipcRenderer} = GlasscordApi.require('electron');
-			ipcRenderer.send('glasscord_refresh');
-			const callback = function(mutationsList, observer){
-				let shouldUpdate = false;
-				for(let mutation of mutationsList){
-					if(mutation.target.nodeName.toLowerCase() == 'style'){ // text in style has changed!
+		this._executeInRenderer(
+			// RENDERER CODE BEGIN
+			function(){
+				const {ipcRenderer} = GlasscordApi.require('electron');
+				ipcRenderer.send('glasscord_refresh');
+				const callback = function(mutationsList, observer){
+					let shouldUpdate = false;
+					for(let mutation of mutationsList){
+						if(mutation.target.nodeName.toLowerCase() == 'style'){ // text in style has changed!
 							shouldUpdate = true;
 							break;
-					}
-					
-					if(mutation.addedNodes.length != 0){ // some nodes were added!
-						for(let addedNode of mutation.addedNodes){
-							if(addedNode.nodeName.toLowerCase() == 'style'){
-								shouldUpdate = true;
-								break;
+						}
+
+						if(mutation.addedNodes.length != 0){ // some nodes were added!
+							for(let addedNode of mutation.addedNodes){
+								if(addedNode.nodeName.toLowerCase() == 'style'){
+									shouldUpdate = true;
+									break;
+								}
+							}
+						}
+
+						if(shouldUpdate) break; // don't spend other time iterating
+
+						if(mutation.removedNodes.length != 0){ // some nodes were removed!
+							for(let removedNode of mutation.removedNodes){
+								if(removedNode.nodeName.toLowerCase() == 'style'){
+									shouldUpdate = true;
+									break;
+								}
 							}
 						}
 					}
-					
-					if(shouldUpdate) break; // don't spend other time iterating
-				
-					if(mutation.removedNodes.length != 0){ // some nodes were removed!
-						for(let removedNode of mutation.removedNodes){
-							if(removedNode.nodeName.toLowerCase() == 'style'){
-								shouldUpdate = true;
-								break;
-							}
-						}
-					}
+
+					if(shouldUpdate) ipcRenderer.send('glasscord_refresh');
 				}
-			
-				if(shouldUpdate) ipcRenderer.send('glasscord_refresh');
+				const observer = new MutationObserver(callback);
+				observer.observe(document.head, {childList: true, subtree: true});
 			}
-			const observer = new MutationObserver(callback);
-			observer.observe(document.head, {childList: true, subtree: true});
-		}())`);
+		);
+		// RENDERER CODE END
 	}
 	
 	_loadModules(){
@@ -170,19 +174,29 @@ module.exports = class Main{
 	 * Expose a quite handy GlasscordApi object to the renderer
 	 */
 	_exposeApi(){
-		this.win.webContents.executeJavaScript(`
-		window.GlasscordApi = {
-			require: (window.nodeRequire || window.require),
-			version: '${pak.version}'
-		};
-		`);
+		this._executeInRenderer(
+			// RENDERER CODE BEGIN
+			function(version){
+				window.GlasscordApi = {
+					require: (window.nodeRequire || window.require),
+					version: version
+				};
+			}
+			// RENDERER CODE END
+		, pak.version);
 	}
 	
 	/**
 	 * Another handy method to log directly to DevTools
 	 */
-	_log(message, level){
-		this.win.webContents.executeJavaScript("console." + level + "('%c[Glasscord] %c" + message + "', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');");
+	_log(message, level = 'log'){
+		this._executeInRenderer(
+			// RENDERER CODE BEGIN
+			function(message, level){
+				console[level]('%c[Glasscord] %c' + message, 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');
+			}
+			// RENDERER CODE END
+		, message, level);
 	}
 	
 	/**
@@ -190,14 +204,25 @@ module.exports = class Main{
 	 * Hacky but it does the job.
 	 */
 	_getCssProp(propName){
-		return this.win.webContents.executeJavaScript(`(function(){
-			let flag = getComputedStyle(document.documentElement).getPropertyValue('${propName}');
-			if(flag)
-				return flag.trim().replace('"','');
-		}())`).then(res => {
+		return this._executeInRenderer(
+			// RENDERER CODE BEGIN
+			function(propName){
+				let flag = getComputedStyle(document.documentElement).getPropertyValue(propName);
+				if(flag) return flag.trim().replace('"','');
+			}
+			// RENDERER CODE END
+		, propName).then(res => {
 			if(res) return res;
 			return null;
 		});
+	}
+	
+	// stolen from zack senpai
+	_executeInRenderer(method, ...params) {
+		if(method.name.length !== 0)
+			method = method.toString().replace(method.name, "function").replace("function function", "function");
+		else method = method.toString();
+		return this.win.webContents.executeJavaScript(`(${method})(...${JSON.stringify(params)});`);
 	}
 	
 	_defineApp(){
