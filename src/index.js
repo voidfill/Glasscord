@@ -81,9 +81,13 @@ function overrideEmit(){ // from Zack, blame Electron
 	};
 }
 
-function injectFromResources(){
+function injectAsRequire(){
 	if(process.platform == 'linux') onReady();
 	overrideEmit();
+}
+
+function injectFromResources(){
+	injectAsRequire();
 	// Use the app's original info to run it
 	const probablePkgs = [
 		path.join(__dirname, "..", "..", "package.original.json"),
@@ -108,5 +112,8 @@ function injectFromResources(){
 
 if(electron.app.name == 'discord') // we can assume it's the old fashioned method
 	onReady();
-else
+else if(require('../../package.json').main.includes('glasscord')) // we can assume we're injecting
 	injectFromResources();
+else{ // we can assume this injection is not really an injection at this point
+	injectAsRequire();
+}
