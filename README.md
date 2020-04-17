@@ -31,7 +31,41 @@ _TL;DR: Help me I have no purpose in this life anymore_
 ## How do I install it?
 Well, glad you asked!
 
-### Visual Studio Code instructions will be here soon!
+### Visual Studio Code (+ potentially any other Electron app) instructions
+
+- ~~Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.~~
+  **VSCODE+ SUPPORT IS STILL UNDER HEAVY DEVELOPMENT -- NO RELEASES ARE PLANNED! YOU MUST PACKAGE YOUR OWN `glasscord.asar` TO USE IT**
+- Locate your Electron app installation folder. We will assume it being the root directory from now on.
+- Locate the `resources` folder. Inside it you'll likely have an `app.asar` file OR an `app` folder.
+
+#### Case 1: you have an `app.asar` file
+- Create an `app` folder.
+- Now you need to get the `package.json` file from the `app.asar` file.
+  The best and quickest way to extract it via the `asar` command line tool.
+  
+  If you don't have it, install it via `sudo npm install -g --engine-strict asar`.
+  
+  Run this script where the `app.asar` file is:
+  ```
+  asar ef app.asar package.json
+  ```
+- Place your newly extracted `package.json` inside the `app` folder.
+
+#### Case 2: you already have an `app` folder
+- Make a duplicate copy of the `package.json` file and name it `package.original.json`.
+
+#### Finishing up
+- Place your `glasscord.asar` file inside the `app` folder.
+- Now, your target `package.json` should be extracted. Modify it so that its `main` property points to `./glasscord.asar`.
+  ```json
+  {
+    [...]
+      "main": "./glasscord.asar",
+    [...]
+  }
+  ```
+- If everything was done correctly, the Electron app should start and Glasscord should be injected.
+
 
 ### Discord instructions
 
