@@ -24,47 +24,44 @@ module.exports = class CSSLoader extends Module {
 	
 	constructor(main){
 		super(main);
-		this.main.win.webContents.on('dom-ready', () => { this._load() });
 		if(!this.config.cssPath) this.config.cssPath = ''; // Just so we don't trigger strange stuff on the renderer
+		this.main.win.webContents.on('dom-ready', () => { this.main._executeInRenderer(this._load, this.config.cssPath) });
 	}
 
-	_load(){
-		this.main.win.webContents.executeJavaScript(`(function(){
-			// We'll use our custom GlasscordApi to require modules
-			const path = GlasscordApi.require('path');
-			const fs = GlasscordApi.require('fs');
+	// Renderer function
+	_load(cssPath){
+		// We'll use our custom GlasscordApi to require modules
+		const path = GlasscordApi.require('path');
+		const fs = GlasscordApi.require('fs');
 
-			function readFile(path, encoding = 'utf-8') {
-				return new Promise((resolve, reject) => {
-						fs.readFile(path, encoding, (err, data) => {
-						if (err) reject(err);
-						else resolve(data);
-					});
+		function readFile(path, encoding = 'utf-8') {
+			return new Promise((resolve, reject) => {
+					fs.readFile(path, encoding, (err, data) => {
+					if (err) reject(err);
+					else resolve(data);
+				});
+			});
+		}
+
+		readFile(cssPath).then(css => {
+			if (!window.customCss) {
+				window.customCss = document.createElement('style');
+				document.head.appendChild(window.customCss);
+			}
+			window.customCss.innerHTML = css;
+			console.log('%c[Glasscord] %cCustom stylesheet loaded!', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');
+
+			if (window.cssWatcher == null) {
+				window.cssWatcher = fs.watch(cssPath, { encoding: 'utf-8' },
+				eventType => {
+					if (eventType == 'change') {
+						readFile(cssPath).then(newCss => {
+							window.customCss.innerHTML = newCss;
+							console.log('%c[Glasscord] %cCustom stylesheet reloaded!', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');
+						});
+					}
 				});
 			}
-
-			const cssPath = '${this.config.cssPath}';
-
-			readFile(cssPath).then(css => {
-				if (!window.customCss) {
-					window.customCss = document.createElement('style');
-					document.head.appendChild(window.customCss);
-				}
-				window.customCss.innerHTML = css;
-				console.log('%c[Glasscord] %cCustom stylesheet loaded!', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');
-
-				if (window.cssWatcher == null) {
-					window.cssWatcher = fs.watch(cssPath, { encoding: 'utf-8' },
-					eventType => {
-						if (eventType == 'change') {
-							readFile(cssPath).then(newCss => {
-								window.customCss.innerHTML = newCss;
-								console.log('%c[Glasscord] %cCustom stylesheet reloaded!', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;');
-							});
-						}
-					});
-				}
-			}).catch(() => console.warn('%c[Glasscord] %cCustom stylesheet not found. Skipping...', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;'));
-		}())`);
+		}).catch(() => console.warn('%c[Glasscord] %cCustom stylesheet not found. Skipping...', 'color:#ff00ff;font-weight:bold', 'color:inherit;font-weight:normal;'));
 	}
 }
