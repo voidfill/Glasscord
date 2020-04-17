@@ -138,6 +138,9 @@ If you're using Glasscord's own CSS loader, you can configure it easily by editi
 If installed properly, Glasscord won't interfere with any modern plugin loaders.
 In fact, I tested it with EnhancedDiscord and BandagedBD and it works flawlessly!
 
+## Is it compatible with _[name of random Electron app here]_?
+Try it for yourself and let us know!
+
 ## Hey buddy, I am a theme creator; how should I support Glasscord in my own themes?
 Glasscord will look for some CSS properties defined in the `:root` CSS selector.
 Please take a look at the `glasscord_example.theme.css` file to better understand how they are used.
