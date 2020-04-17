@@ -1,5 +1,5 @@
 # ![Glasscord](images/glasscord_banner.png)
-Providing composition effects to the Discord client.
+Providing composition effects to Electron applications.
 
 [![ko-fi](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/K3K3D0E0)
 [![patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://patreon.com/arytonex)
@@ -8,10 +8,12 @@ Providing composition effects to the Discord client.
 
 [![Chat with us on Discord](https://discordapp.com/api/guilds/696696149301657640/embed.png)](https://discord.gg/SftnByN)
 
-![Preview](images/preview.png)
+![Glasscord + Discord](images/preview_discord.png)
+![Glasscord + VSCode](images/preview_vscode.png)
 
 ### What is it?
-Glasscord is a really simple tool that enables window composition effects (transparency and frosted glass effects) on Discord.
+Glasscord is a really simple tool that enables window composition effects (transparency and frosted glass effects) on Electron apps,
+such as Discord and Visual Studio Code; however it can be expanded to work with *almost any* Electron app.
 
 It is compatible with Windows, Linux and macOS.
 
@@ -29,6 +31,10 @@ _TL;DR: Help me I have no purpose in this life anymore_
 ## How do I install it?
 Well, glad you asked!
 
+### Visual Studio Code instructions will be here soon!
+
+### Discord instructions
+
 - First of all, you need to download and install a CSS loader of your choice.
   We can recommend (and we've tested) those client mods/CSS loaders:
   - [BandagedBD](https://github.com/rauenzi/BetterDiscordApp)
@@ -38,6 +44,8 @@ Well, glad you asked!
   Keep in mind that Glasscord may work with other CSS loaders and client mods too.
   
   After you installed the CSS loader properly, you can continue following this guide.
+  
+  **Note:** Glasscord's own CSS loader was forcefully disabled on Discord to avoid conflicts with other client mods.
 - Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
 - Locate your Discord Desktop Core module folder. In the respective file paths, `x.x.x` corresponds to the version number.
   - On Windows, it is `%AppData%\discord\x.x.x\modules\discord_desktop_core\`
@@ -74,9 +82,23 @@ Well, glad you asked!
 ## How do I USE it?
 Assuming you already installed everything correctly, you will need to load a custom CSS theme which supports Glasscord.
 
-If you want to just try Glasscord, you can load the `discord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
+If you want to just try Glasscord on Discord, you can load the `discord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
 
-Please refer to your CSS loader's documentation to know how to load CSS stylesheets.
+If you're using a third-party CSS loader, please refer to your CSS loader's documentation to know how to load CSS stylesheets.
+
+If you're using Glasscord's own CSS loader, you can configure it easily by editing the `glasscord_config.json` file which sits right where `glasscord.asar` is:
+```json
+{
+  "modules": {
+    "CSSLoader": {
+      "enabled": true,
+      "config": {
+        "cssPath": "/path/to/your.css"
+      }
+    }
+  }
+}
+```
 
 ## Is it compatible with _[name of random Discord plugin loader here]_?
 If installed properly, Glasscord won't interfere with any modern plugin loaders.
