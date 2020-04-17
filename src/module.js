@@ -32,14 +32,17 @@ module.exports = class Module{
 	constructor(main){
 		this.main = main;
 		this.config = Utils.getConfigForModule(this.constructor.name);
-		this.main._log("Module " + this.constructor.name + " loaded!", 'log');
+		this.log("Module loaded!");
 	}
 	
 	update(cssProp, value){}
 	
-	
 	saveConfig(){
 		Utils.setConfigForModule(this.constructor.name, this.config);
 		Utils.saveConfig();
+	}
+
+	log(message, level = 'log') {
+		this.main._log(`[${this.constructor.name}] ${message}`, level);
 	}
 }
