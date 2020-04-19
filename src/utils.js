@@ -17,8 +17,9 @@
 
 const path = require('path');
 const fs = require('fs');
+const electron = require('electron');
 
-const configpath = path.join(__dirname, "..", "..", "glasscord_config.json");
+const configpath = path.join(electron.app.getPath('appData'), 'glasscord', 'config_' + electron.app.name + '.json');
 const defaultConfig = {
 	windowProps: {
 		frame: (process.platform == "linux" ? true : false),
