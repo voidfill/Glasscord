@@ -44,6 +44,7 @@ class Utils{
 			this.config = {};
 			Object.assign(this.config, defaultConfig);
 		}
+		if(!fs.existsSync(path.join(configpath, '..'))) fs.mkdirSync(path.join(configpath, '..'));
 		fs.writeFileSync(configpath, JSON.stringify(this.config, undefined, 2));
 	}
 
