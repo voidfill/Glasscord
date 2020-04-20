@@ -26,16 +26,26 @@ module.exports = class Discord extends Module{
 	
 	constructor(main){
 		super(main);
-		// KWin is buggy, hack around it for now PART 1 BEGIN
-		if(process.platform == 'linux' && this.main.win.isNormal()){
-			if (!this.config.titlebar || this.config.titlebar === 'native') return;
-			this.main.getModule('Linux')._getXWindowManager().then(XWinMgr => {
-				if(!XWinMgr || XWinMgr !== 'KWin') return;
-				this.main.win.setSize(this.main.win.getSize()[0], ++this.main.win.getSize()[1]);
-				this._KwinIsDumb = true;
-			});
+		// KWin is buggy, hack around it for now BEGIN
+		if(process.platform == 'linux'){
+			if(this.config.titlebar !== 'native' && this.config.titlebar !== 'linux'){
+				this.main.getModule('Linux')._getXWindowManager().then(XWinMgr => {
+					if(!XWinMgr || XWinMgr !== 'KWin') return;
+					let _maximized = false;
+					this.main.win.on('maximize', () => {_maximized = true;});
+					this.main.win.on('unmaximize', () => {if(this.main.win.isVisible()) _maximized = false;});
+					this.main.win.on('hide', () => {
+						if(!_maximized) this.main.win.setSize(this.main.win.getSize()[0], --this.main.win.getSize()[1]);
+					});
+					this.main.win.on('show', () => {
+						if(this.main.win.isMaximized()) return;
+						setTimeout(() => this.main.win.setSize(this.main.win.getSize()[0], ++this.main.win.getSize()[1]), 500);
+					});
+				});
+			}
 		}
-		// KWin is buggy, hack around it for now PART 1 END
+		// KWin is buggy, hack around it for now END
+
 		this.main.win.webContents.on('dom-ready', () => {
 			this.main._executeInRenderer(this._getWebpackModules);
 		});
@@ -48,9 +58,6 @@ module.exports = class Discord extends Module{
 			this.log('Titlebar successfully updated', 'info');
 			this.main.win.blur();
 			this.main.win.focus();
-			
-			// KWin is buggy, hack around it for now PART 2
-			if(this._KwinIsDumb) this.main.win.setSize(this.main.win.getSize()[0], --this.main.win.getSize()[1]);
 		});
 	}
 	
