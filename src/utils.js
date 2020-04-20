@@ -19,7 +19,8 @@ const path = require('path');
 const fs = require('fs');
 const electron = require('electron');
 
-const configpath = path.join(electron.app.getPath('appData'), 'glasscord', 'config_' + electron.app.name + '.json');
+const savepath = path.join(electron.app.getPath('appData'), 'glasscord');
+const configpath = path.join(savepath, 'config_' + electron.app.name + '.json');
 const defaultConfig = {
 	windowProps: {
 		frame: (process.platform == "linux" ? true : false),
@@ -44,7 +45,7 @@ class Utils{
 			this.config = {};
 			Object.assign(this.config, defaultConfig);
 		}
-		if(!fs.existsSync(path.join(configpath, '..'))) fs.mkdirSync(path.join(configpath, '..'));
+		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
 		fs.writeFileSync(configpath, JSON.stringify(this.config, undefined, 2));
 	}
 
@@ -56,7 +57,7 @@ class Utils{
 			return {};
 		}
 	}
-	
+
 	static setConfigForModule(name, config){
 		if(config && Object.keys(config).length !== 0){
 			if(!this.config) Utils.loadConfig();
@@ -69,7 +70,7 @@ class Utils{
 			}catch(e){}
 		}
 	}
-	
+
 	static initializeModuleConfig(name, defaultConfig, isCore){
 		if(!this.config.modules[name]){
 			if(!isCore){
@@ -79,14 +80,14 @@ class Utils{
 			Utils.setConfigForModule(name, defaultConfig);
 		}
 	}
-	
+
 	static isModuleEnabled(name){
 		try{
 			if(this.config.modules[name].enabled) return true;
 		}catch(e){}
 		return false;
 	}
-	
+
 	static getWindowProperties(){
 		try{
 			return this.config.windowProps;
@@ -94,13 +95,30 @@ class Utils{
 			return {};
 		}
 	}
-	
+
 	static setWindowProperties(windowProps){
 		this.config.windowProps = windowProps;
 	}
 
+	static getSavedPath(filename){
+		return path.join(savepath, filename);
+	}
+
+	static copyToPath(innerFile, outerFilename = null, flags = fs.constants.COPYFILE_EXCL){
+		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
+		return fs.copyFileSync(innerFile, Utils.getSavedPath(outerFilename || path.basename(innerFile)), flags);
+	}
+
+	static removeFromPath(filename){
+		return fs.unlinkSync(Utils.getSavedPath(filename));
+	}
+
+	static isInPath(filename){
+		return fs.existsSync(Utils.getSavedPath(filename));
+	}
+
 }
 
-module.exports = Utils;
-
 Utils.loadConfig();
+
+module.exports = Utils;

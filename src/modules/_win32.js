@@ -15,7 +15,8 @@
 */
 'use strict';
 
-const Module = require('../module.js')
+const Module = require('../module.js');
+const SWCA = require("../native/win32_swca/swca.js");
 
 module.exports = class Win32 extends Module{
 	static isCore = true;
@@ -24,6 +25,7 @@ module.exports = class Win32 extends Module{
 	
 	constructor(main){
 		super(main);
+		this.swca = new SWCA(this.main.win);
 		this._type = 'none';
 		this._performance_mode = true;
 		const lessCostlyBlurWin = Win32.debounce(() => {this._apply('blurbehind')}, 50, true);
@@ -68,20 +70,19 @@ module.exports = class Win32 extends Module{
 	}
 	
 	_apply(type){
-		const ewc = require("../../lib/ewc");
 		switch(type){
 			case 'acrylic':
-				ewc.setAcrylic(this.main.win, 0x00000001);
+				this.swca.setAcrylic(0x00000001);
 				break;
 			case 'blurbehind':
-				ewc.setBlurBehind(this.main.win, 0x00000000);
+				this.swca.setBlurBehind(0x00000000);
 				break;
 			case 'transparent':
-				ewc.setTransparentGradient(this.main.win, 0x00000000);
+				this.swca.setTransparentGradient(0x00000000);
 				break;
 			case 'none':
 			default:
-				ewc.disable(this.main.win, 0xff000000);
+				this.swca.disable(0xff000000);
 				break;
 		}
 	}
