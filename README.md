@@ -74,7 +74,7 @@ Well, glad you asked!
 ## How do I USE it?
 Assuming you already installed everything correctly, you will need to load a custom CSS theme which supports Glasscord.
 
-If you want to just try Glasscord, you can load the `glasscord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
+If you want to just try Glasscord, you can load the `discord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
 
 Please refer to your CSS loader's documentation to know how to load CSS stylesheets.
 

@@ -189,6 +189,18 @@
     background-color: transparent !important;
 }
 
+.platform-osx .unreadMentionsIndicatorTop-gA6RCh {
+    top: 32px;
+}
+
+.platform-osx .back-1Ess-_ {
+    -webkit-app-region: no-drag;
+}
+
+.platform-osx .button-2PWmas {
+    -webkit-app-region: no-drag;
+}
+
 .messagesPopoutWrap-1MQ1bW {
 	background-color: var(--background-pinned);
 }
