@@ -19,7 +19,7 @@ const electron = require('electron');
 const pak = require('../package.json');
 
 const _GlasscordApi = {
-	require: window.require,
+	require: module.require,
 	version: pak.version
 };
 

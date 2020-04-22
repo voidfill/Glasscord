@@ -34,8 +34,8 @@ class BrowserWindow extends electron.BrowserWindow {
 		options.backgroundColor = '#00000000';
 		if(typeof options.webPreferences.preload !== 'undefined')
 			global._preload = options.webPreferences.preload;
+		options.webPreferences.contextIsolation = false; // enforce it
 		options.webPreferences.preload = path.join(__dirname, "preload.js");
-		options.webPreferences.nodeIntegration = true;
 		Object.assign(options, Utils.getWindowProperties());
 		super(options);
 		new Main(this);
