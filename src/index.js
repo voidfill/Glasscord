@@ -34,10 +34,12 @@ class BrowserWindow extends electron.BrowserWindow {
 	constructor(options) {
 		if(process.platform != 'win32') options.transparent = true;
 		options.backgroundColor = '#00000000';
+		let _preload = null;
 		if(typeof options.webPreferences.preload !== 'undefined')
-			global._preload = options.webPreferences.preload;
+			_preload = options.webPreferences.preload;
 		options.webPreferences.contextIsolation = false; // enforce it
 		options.webPreferences.preload = path.join(__dirname, "preload.js");
+		electron.ipcMain.on('_preload', (e) => {e.returnValue = _preload;});
 		Object.assign(options, Utils.getWindowProperties());
 		super(options);
 		new Main(this);

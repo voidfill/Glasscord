@@ -27,4 +27,6 @@ process.once('loaded', () => {
 	global.GlasscordApi = Object.assign({}, _GlasscordApi);
 });
 
-require(electron.remote.getGlobal('_preload'));
+const _preload = electron.ipcRenderer.sendSync('_preload');
+if(typeof _preload == 'string') // it exists!
+	_GlasscordApi.require(_preload);
