@@ -152,7 +152,7 @@ module.exports = class Discord extends Module{
 				onConfirm: () => {
 					const app = require('electron').remote.app;
 					app.relaunch();
-					app.exit();
+					app.quit();
 				}
 			}, props));
 		});
