@@ -25,6 +25,8 @@ const Module = require('module');
 // Require our version checker
 require('./version_check.js')();
 
+module.exports = {isGlasscord: true};
+
 /*
  * The BrowserWindow override class
  */
@@ -76,7 +78,6 @@ function overrideEmit(){ // from Zack, blame Electron
 	const originalEmit = electron.app.emit;
 	electron.app.emit = function(event, ...args) {
 		if (event !== "ready") return Reflect.apply(originalEmit, this, arguments);
-		if(process.platform != 'linux') onReady();
 		setTimeout(() => {
 			electron.app.emit = originalEmit;
 			electron.app.emit("ready", ...args);
@@ -85,8 +86,8 @@ function overrideEmit(){ // from Zack, blame Electron
 }
 
 function injectAsRequire(){
-	if(process.platform == 'linux') onReady();
 	overrideEmit();
+	onReady();
 }
 
 function injectFromResources(){
@@ -115,7 +116,7 @@ function injectFromResources(){
 
 if(electron.app.name == 'discord') // we can assume it's the old fashioned method
 	onReady();
-else if(require('../../package.json').main.includes('glasscord')) // we can assume we're injecting
+else if(require.main.exports.isGlasscord) // we can assume we're injecting
 	injectFromResources();
 else{ // we can assume this injection is not really an injection at this point
 	injectAsRequire();
