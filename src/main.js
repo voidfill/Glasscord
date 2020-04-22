@@ -56,7 +56,6 @@ module.exports = class Main{
 	 * The hook method
 	 */
 	_hook(){
-		this._exposeApi();
 		this._watchdog();
 	}
 	
@@ -168,22 +167,6 @@ module.exports = class Main{
 		Promise.all(promises).then(res => {
 			this._log("Updated!", 'log');
 		});
-	}
-	
-	/**
-	 * Expose a quite handy GlasscordApi object to the renderer
-	 */
-	_exposeApi(){
-		this._executeInRenderer(
-			// RENDERER CODE BEGIN
-			function(version){
-				window.GlasscordApi = {
-					require: (window.nodeRequire || window.require),
-					version: version
-				};
-			}
-			// RENDERER CODE END
-		, pak.version);
 	}
 	
 	/**
