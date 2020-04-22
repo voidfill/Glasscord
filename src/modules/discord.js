@@ -73,7 +73,7 @@ module.exports = class Discord extends Module{
 			// Update to new titlebar
 			this.config.titlebar = os;
 			const current = Utils.getWindowProperties();
-			current.frame = os === 'linux';
+			current.frame = (os === 'linux' || (os === 'native' && process.platform === 'linux'));
 			Utils.setWindowProperties(current);
 			this.saveConfig();
 
