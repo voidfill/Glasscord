@@ -83,7 +83,7 @@ function overrideEmit(){ // from Zack, blame Electron
 		setTimeout(() => {
 			electron.app.emit = originalEmit;
 			electron.app.emit("ready", ...args);
-		}, 600);
+		}, 1000);
 	};
 }
 
