@@ -53,7 +53,7 @@ module.exports = class Linux extends Module{
 				}
 				xprop = res.stdout.trim();
 				
-				const shCommand = `${xprop} -id $(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
+				const shCommand = `${xprop} -id $(${xprop} -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
 				return execFile('sh', ['-c',shCommand]).then(res => {
 					if(res.error) return null;
 					return res.stdout.trim();
@@ -61,7 +61,7 @@ module.exports = class Linux extends Module{
 			});
 		}
 		this.log("It seems you're not in an X.Org session!");
-		return Promise(null);
+		return Promise.resolve(null);
 	}
 	
 	/**
