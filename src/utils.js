@@ -20,7 +20,11 @@ const fs = require('fs');
 const electron = require('electron');
 
 const savepath = path.join(electron.app.getPath('appData'), 'glasscord');
+const globalconfigpath = path.join(savepath, 'GlobalConfiguration.json');
 const configpath = path.join(savepath, 'config_' + electron.app.name + '.json');
+const defaultGlobalConfig = {
+	autoUpdate: true
+};
 const defaultConfig = {
 	windowProps: {},
 	modules: {}
@@ -38,6 +42,16 @@ class Utils{
 		}
 	}
 
+	static loadGlobalConfig(){
+		if(!this.globalConfig){
+			try{
+				this.globalConfig = require(globalconfigpath);
+			}catch(e){
+				Utils.saveGlobalConfig();
+			}
+		}
+	}
+
 	static saveConfig(){
 		if(!this.config){
 			this.config = {};
@@ -45,6 +59,28 @@ class Utils{
 		}
 		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
 		fs.writeFileSync(configpath, JSON.stringify(this.config, undefined, 2));
+	}
+
+	static saveGlobalConfig(){
+		if(!this.globalConfig){
+			this.globalConfig = {};
+			Object.assign(this.globalConfig, defaultGlobalConfig);
+		}
+		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
+		fs.writeFileSync(globalconfigpath, JSON.stringify(this.globalConfig, undefined, 2));
+	}
+
+	static getGlobalConfig(name){
+		try{
+			return this.globalConfig["name"];
+		}catch(e){
+			return null;
+		}
+	}
+
+	static setGlobalConfig(name, value){
+		if(!this.globalConfig) Utils.loadGlobalConfig();
+		this.globalConfig[name] = value;
 	}
 
 	static getConfigForModule(name){
@@ -122,5 +158,6 @@ class Utils{
 }
 
 Utils.loadConfig();
+Utils.loadGlobalConfig();
 
 module.exports = Utils;

@@ -18,6 +18,7 @@
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
+const Utils = require('./utils.js');
 const pak = require('../package.json');
 
 // why bother requiring the 'request' module????
@@ -80,6 +81,8 @@ function versionCompare(v1, v2, options) {
 }
 
 module.exports = function(){
+	if(!Utils.getGlobalConfig("autoUpdate")) return;
+	
 	if(path.extname(__dirname) == '.asar'){ // Are we inside an asar?
 		console.log('You are running a packaged Glasscord installation!'); // Yes.
 		let asarName = path.join(path.dirname(__dirname), path.basename(__dirname, '.asar')); // result is whatever-the-dir/glasscord (without the .asar at the end)
