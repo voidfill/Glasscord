@@ -17,6 +17,8 @@
 
 const Module = require('../module.js');
 const util = require('util');
+const sys = require('sys');
+const exec = util.promisify(require('child_process').exec);
 const execFile = util.promisify(require('child_process').execFile);
 
 module.exports = class Linux extends Module{
@@ -25,19 +27,18 @@ module.exports = class Linux extends Module{
 	cssProps = ["--glasscord-linux-blur"];
 	
 	update(cssProp, value){
-		if(value){
-			this._getXWindowManager().then(res => {
-				switch(res){
-					case 'KWin':
-						this._kwin_requestBlur(value);
-						break;
-					default:
-						if(value)
-							this.log("You are not running a supported window manager. Blur won't be available via Glasscord.");
-						break;
-				}
-			});
-		}
+		value = (value.toLowerCase() === "true");
+		this._getXWindowManager().then(res => {
+			switch(res){
+				case 'KWin':
+					this._kwin_requestBlur(value);
+					break;
+				default:
+					if(value)
+						this.log("You are not running a supported window manager. Blur won't be available via Glasscord.");
+					break;
+			}
+		});
 	}
 	
 	/**
@@ -45,15 +46,14 @@ module.exports = class Linux extends Module{
 	 */
 	_getXWindowManager(){
 		if(process.env.XDG_SESSION_TYPE == 'x11'){
-			let xprop;
 			return execFile('which', ['xprop']).then(res => {
 				if(res.error){
 					this.log("Your system is missing the xprop tool (perhaps we're in a Snap/Flatpak container?). Please make it available to Discord!");
 					return null;
 				}
-				xprop = res.stdout.trim();
+				this.xprop = res.stdout.trim();
 				
-				const shCommand = `${xprop} -id $(${xprop} -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
+				const shCommand = `${this.xprop} -id $(${this.xprop} -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"\{print $5\}') -notype -f _NET_WM_NAME 8t | grep "_NET_WM_NAME = " | cut --delimiter=' ' --fields=3 | cut --delimiter='"' --fields=2`;
 				return execFile('sh', ['-c',shCommand]).then(res => {
 					if(res.error) return null;
 					return res.stdout.trim();
@@ -69,14 +69,10 @@ module.exports = class Linux extends Module{
 	 * Sorry, Wayland users (for now) :C
 	 */
 	_kwin_requestBlur(mode){
+		if(!this.xprop) return;
 		if(process.env.XDG_SESSION_TYPE != 'x11') return;
-		
-		const xid = this.main.win.getNativeWindowHandle().readUInt32LE().toString(16);
-		const remove = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -remove _KDE_NET_WM_BLUR_BEHIND_REGION -id 0x' + xid;
-		const request = 'xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 0 -id 0x' + xid;
-		
-		let sys = require('sys')
-		let exec = require('child_process').exec;
-		exec(mode ? request : remove);
+		const xid = '0x' + this.main.win.getNativeWindowHandle().readUInt32LE().toString(16);
+		const shCommand = this.xprop + ' -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c ' + (mode ? '-set' : '-remove') + ' _KDE_NET_WM_BLUR_BEHIND_REGION ' + (mode ? '0' : '') + ' -id ' + xid;
+		return exec(shCommand);
 	}
 }
