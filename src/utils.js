@@ -98,6 +98,10 @@ class Utils{
 		this.config.windowProps = windowProps;
 	}
 
+	static getSavePath(){
+		return savepath;
+	}
+
 	static getSavedPath(filename){
 		return path.join(savepath, filename);
 	}

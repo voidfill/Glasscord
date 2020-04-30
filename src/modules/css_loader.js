@@ -17,6 +17,7 @@
 
 const Module = require('../module.js');
 const path = require('path');
+const Utils = require('../utils.js');
 
 module.exports = class CSSLoader extends Module {
 	static defaultConfig = {cssPath: ''};
@@ -24,7 +25,11 @@ module.exports = class CSSLoader extends Module {
 	
 	constructor(main){
 		super(main);
-		if(!this.config.cssPath) this.config.cssPath = ''; // Just so we don't trigger strange stuff on the renderer
+		if(!this.config.cssPath) this.config.cssPath = '';
+		
+		if(this.config.cssPath.length !== 0 && !path.isAbsolute(this.config.cssPath))
+			this.config.cssPath = path.resolve(Utils.getSavePath(), this.config.cssPath);
+		
 		this.main.win.webContents.on('dom-ready', () => { this.main._executeInRenderer(this._load, this.config.cssPath) });
 	}
 
