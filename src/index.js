@@ -15,65 +15,43 @@
 */
 'use strict';
 
-const Main = require('./main.js');
-const Utils = require('./utils.js');
 const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
 const Module = require('module');
+const BrowserWindow = require('./browser_window.js');
 
 // Require our version checker
 require('./version_check.js')();
 
-module.exports = {isGlasscord: true};
-
-/*
- * The BrowserWindow override class
- */
-class BrowserWindow extends electron.BrowserWindow {
-	constructor(options) {
-		if(process.platform != 'win32') options.transparent = true;
-		options.backgroundColor = '#00000000';
-		let _preload = null;
-		if(typeof options.webPreferences.preload !== 'undefined')
-			_preload = options.webPreferences.preload;
-		options.webPreferences.contextIsolation = false; // enforce it
-		options.webPreferences.preload = path.join(__dirname, "preload.js");
-		electron.ipcMain.on('_preload', (e) => {e.returnValue = _preload;});
-		Object.assign(options, Utils.getWindowProperties());
-		super(options);
-		new Main(this);
-	}
-
-	/**
-	 * Let's stub setBackgroundColor because it's way too buggy. Use the CSS 'body' selector instead.
-	 */
-	setBackgroundColor(backgroundColor){
-		return;
-	}
+if(electron.app.name == 'discord') // we can assume it's the old fashioned method
+	onReady();
+else{
+	module.exports = {isGlasscord: true};
+	if(require.main.exports.isGlasscord) // we can assume we're injecting
+		injectFromResources();
+	else // we can assume this injection is not really an injection at this point
+		injectAsRequire();
+	module.exports = {};
 }
 
-Object.assign(BrowserWindow, electron.BrowserWindow); // Retains the original functions
-if (electron.deprecate && electron.deprecate.promisify) {
-    const originalDeprecate = electron.deprecate.promisify; // Grab original deprecate promisify
-    electron.deprecate.promisify = (originalFunction) => originalFunction ? originalDeprecate(originalFunction) : () => void 0; // Override with falsey check
-}
+// ------------------------------------------------------------- FUNCTIONS
 
 function onReady(){
+	// Switches and configs that can be toggled on directly
 	if(!electron.app.commandLine.hasSwitch('enable-transparent-visuals'))
 		electron.app.commandLine.appendSwitch('enable-transparent-visuals'); // ALWAYS enable transparent visuals
 
-	Object.assign(BrowserWindow, electron.BrowserWindow); // Assigns the new chrome-specific functions
+	// Replacing of BrowserWindow with ours
+	Object.assign(BrowserWindow, electron.BrowserWindow); // Assign the new chrome-specific functions
 	const electronPath = require.resolve("electron");
 	const newElectron = Object.assign({}, electron, {BrowserWindow}); // Create new electron object
 
-	while(true) try{
-		require.cache[electronPath].exports = newElectron; // Try to assign the exports as the new electron
-		if (require.cache[electronPath].exports === newElectron) break; // If it worked, break the loop
-		else throw 'Zack is not cool';
-	}catch(e){
-		delete require.cache[electronPath].exports; // If it didn't work, try to delete existing
-	}
+	delete require.cache[electronPath].exports; // Delete exports
+	require.cache[electronPath].exports = newElectron; // Assign the exports as the new electron
+
+	if(require.cache[electronPath].exports !== newElectron)
+		console.log("Something's wrong! Glasscord can't be injected properly!");
 };
 
 function overrideEmit(){ // from Zack, blame Electron
@@ -96,9 +74,9 @@ function injectFromResources(){
 	injectAsRequire();
 	// Use the app's original info to run it
 	const probablePkgs = [
-		path.join(__dirname, "..", "..", "package.original.json"),
-		path.join(__dirname, "..", "..", "..", "app.original", "package.json"),
-		path.join(__dirname, "..", "..", "..", "app.asar", "package.json")
+		path.join(electron.app.getAppPath(), "package.original.json"),
+		path.join(electron.app.getAppPath(), "..", "app.original", "package.json"),
+		path.join(electron.app.getAppPath(), "..", "app.asar", "package.json")
 	];
 	let pkgDir;
 	let basePath;
@@ -114,12 +92,4 @@ function injectFromResources(){
 	electron.app.setAppPath(basePath);
 	electron.app.name = pkg.name;
 	Module._load(path.join(basePath, pkg.main), null, true);
-}
-
-if(electron.app.name == 'discord') // we can assume it's the old fashioned method
-	onReady();
-else if(require.main.exports.isGlasscord) // we can assume we're injecting
-	injectFromResources();
-else{ // we can assume this injection is not really an injection at this point
-	injectAsRequire();
 }
