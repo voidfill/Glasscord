@@ -24,16 +24,12 @@ const BrowserWindow = require('./browser_window.js');
 // Require our version checker
 require('./version_check.js')();
 
-if(electron.app.name == 'discord') // we can assume it's the old fashioned method
-	onReady();
-else{
-	module.exports = {isGlasscord: true};
-	if(require.main.exports.isGlasscord) // we can assume we're injecting
-		injectFromResources();
-	else // we can assume this injection is not really an injection at this point
-		injectAsRequire();
-	module.exports = {};
-}
+overrideEmit();
+onReady();
+module.exports = {isGlasscord: true};
+if(require.main.exports.isGlasscord) // we can assume we're injecting
+	injectFromResources();
+module.exports = {};
 
 // ------------------------------------------------------------- FUNCTIONS
 
@@ -65,13 +61,7 @@ function overrideEmit(){ // from Zack, blame Electron
 	};
 }
 
-function injectAsRequire(){
-	overrideEmit();
-	onReady();
-}
-
 function injectFromResources(){
-	injectAsRequire();
 	// Use the app's original info to run it
 	const probablePkgs = [
 		path.join(electron.app.getAppPath(), "package.original.json"),
