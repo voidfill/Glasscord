@@ -23,6 +23,7 @@ const electron = require("electron");
 const path = require("path");
 const fs = require("fs");
 const Module = require("module");
+const Main = require("./main.js");
 const BrowserWindow = require("./browser_window.js");
 
 // Require our version checker
@@ -33,6 +34,10 @@ require("./featured_modules.js")();
 
 // Inject the GlasscordApi module for third party communication (on Main)
 injectGlasscordNodeModule();
+
+// Init main meanwhile we check if we should disable the Glasstron API
+if(typeof Main.getInstance().appConfig.disableGlasstronApi === "undefined" || Main.getInstance().appConfig.disableGlasstronApi)
+	glasstron._glasscord_disableGlasstron();
 
 // Inject Glasscord's stuff
 injectGlasscordClass();

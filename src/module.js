@@ -15,34 +15,35 @@
 */
 "use strict";
 
+const path = require("path");
 const Utils = require("./utils.js");
 const Main = require("./main.js");
 
 module.exports = class Module{
 	static isCore = false;
+	static defaultOn = false;
+
 	static platform = [];
 	static platformExclude = [];
-	
+
 	static app = [];
 	static appExclude = [];
-	
+
 	static defaultConfig = {};
-	
+
 	cssProps = [];
-	
+
 	constructor(){
-		this.config = Utils.getConfigForModule(this.constructor.name, this.constructor.defaultConfig);
+		this._configObj = Utils.getModuleConfig(this.constructor.name, this.constructor.defaultConfig);
+		this.config = this._configObj.config;
 		this.logGlobal("Module loaded!");
 	}
-	
+
 	windowInit(win){}
-	
+
 	update(win, cssProp, value){}
-	
-	saveConfig(){
-		Utils.setConfigForModule(this.constructor.name, this.config);
-		Utils.saveConfig();
-	}
+
+	shutdown(){}
 
 	log(webContents, message, level = "log"){
 		message = `[${this.constructor.name}] ${message}`;
@@ -52,6 +53,14 @@ module.exports = class Module{
 	logGlobal(message, level = "log") {
 		message = `[${this.constructor.name}] ${message}`;
 		return Main._logGlobal(message, level);
+	}
+
+	saveConfig(){
+		this._configObj.save();
+	}
+	
+	getStoragePath(){
+		return path.dirname(this._configObj.path);
 	}
 
 	static isApplicable(){

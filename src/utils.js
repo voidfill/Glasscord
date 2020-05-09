@@ -20,131 +20,42 @@ const fs = require("fs");
 const electron = require("electron");
 const https = require("https");
 const crypto = require("crypto");
-const rootApps = require("./root_applications.json");
-
-const savepath = path.join(electron.app.getPath("appData"), "glasscord");
-const globalconfigpath = path.join(savepath, "GlobalConfiguration.json");
-const configpath = path.join(savepath, "config_" + electron.app.name + ".json");
-const defaultGlobalConfig = {
-	autoUpdate: true
-};
-const defaultConfig = {
-	disableGlasstronApi: true,
-	windowProps: {},
-	modules: {}
-};
+const Config = require("./config.js");
+const rootApps = require("./resources/root_applications.json");
 
 class Utils{
 
-	static loadConfig(){
-		if(!this.config){
-			try{
-				this.config = Object.assign({}, defaultConfig, require(configpath));
-			}catch(e){
-				Utils.saveConfig();
-			}
-		}
-	}
-
-	static loadGlobalConfig(){
-		if(!this.globalConfig){
-			try{
-				this.globalConfig = Object.assign({}, defaultGlobalConfig, require(globalconfigpath));
-			}catch(e){
-				Utils.saveGlobalConfig();
-			}
-		}
-	}
-
-	static saveConfig(){
-		if(!this.config){
-			this.config = {};
-			Object.assign(this.config, defaultConfig);
-		}
-		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
-		fs.writeFileSync(configpath, JSON.stringify(this.config, undefined, 2));
-	}
-
-	static saveGlobalConfig(){
-		if(!this.globalConfig){
-			this.globalConfig = {};
-			Object.assign(this.globalConfig, defaultGlobalConfig);
-		}
-		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
-		fs.writeFileSync(globalconfigpath, JSON.stringify(this.globalConfig, undefined, 2));
-	}
-
-	static getConfigForModule(name, _defaultConfig = {}){
-		try{
-			if(this.config.modules[name] && !this.config.modules[name].config)
-				return this.config.modules[name].config = Object.assign({}, _defaultConfig);
-			return Object.assign({}, _defaultConfig, this.config.modules[name].config);
-		}catch(e){
-			return Object.assign({}, _defaultConfig);
-		}
-	}
-
-	static setConfigForModule(name, config){
-		if(config && Object.keys(config).length !== 0){
-			if(!this.config) Utils.loadConfig();
-			if(!this.config.modules) this.config.modules = {};
-			if(!this.config.modules[name]) this.config.modules[name] = {};
-			this.config.modules[name].config = config;
-		}else{
-			try{
-				delete this.config.modules[name].config;
-			}catch(e){}
-		}
-	}
-
-	static initializeModuleConfig(name, defaultConfig, isCore){
-		if(!this.config.modules[name]){
-			if(!isCore){
-				this.config.modules[name] = {};
-				this.config.modules[name].enabled = true;
-			}
-			Utils.setConfigForModule(name, defaultConfig);
-		}
-	}
-
-	static isModuleEnabled(name){
-		try{
-			if(this.config.modules[name].enabled) return true;
-		}catch(e){}
-		return false;
-	}
-
-	static getWindowProperties(){
-		try{
-			return this.config.windowProps;
-		}catch(e){
-			return {};
-		}
-	}
-
-	static setWindowProperties(windowProps){
-		this.config.windowProps = windowProps;
+	static getRootAppName(){
+		for(let rootAppName in rootApps)
+			for(let possibleCurrentApp of rootApps[rootAppName])
+				if(electron.app.name === possibleCurrentApp) return rootAppName;
+		return electron.app.name;
 	}
 
 	static getSavePath(){
-		return savepath;
+		return path.resolve(electron.app.getPath("appData"), "glasscord");
 	}
 
-	static getSavedPath(filename){
-		return path.join(savepath, filename);
+	static getModuleConfig(moduleName, defaultConfig = {}){
+		return new Config(
+			path.resolve(this.getSavePath(), electron.app.name, moduleName, "config.json"),
+			defaultConfig
+		);
 	}
 
-	static copyToPath(innerFile, outerFilename = null, flags = fs.constants.COPYFILE_EXCL){
-		if(!fs.existsSync(savepath)) fs.mkdirSync(savepath);
-		return fs.copyFileSync(innerFile, Utils.getSavedPath(outerFilename || path.basename(innerFile)), flags);
+	static getAppConfig(){
+		return new Config(
+			path.resolve(this.getSavePath(), electron.app.name, "config.json"),
+			require("./resources/config_app.json")
+		);
 	}
 
-	static removeFromPath(filename){
-		return fs.unlinkSync(Utils.getSavedPath(filename));
-	}
-
-	static isInPath(filename){
-		return fs.existsSync(Utils.getSavedPath(filename));
+	static getGlobalConfig(){
+		if(!this._config) this._config = new Config(
+			path.resolve(this.getSavePath(), "config.json"),
+			require("./resources/config.json")
+		);
+		return this._config;
 	}
 
 	static isEmpty(obj) {
@@ -187,7 +98,7 @@ class Utils{
 			return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
 		}
 
-		if(!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) return NaN;
+		if(!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) return undefined;
 
 		if(zeroExtend) {
 			while (v1parts.length < v2parts.length) v1parts.push("0");
@@ -211,16 +122,6 @@ class Utils{
 		return 0;
 	}
 
-	static getRootAppName(){
-		for(let rootAppName in rootApps)
-			for(let possibleCurrentApp of rootApps[rootAppName])
-				if(electron.app.name === possibleCurrentApp) return rootAppName;
-		return electron.app.name;
-	}
-
 }
-
-Utils.loadConfig();
-Utils.loadGlobalConfig();
 
 module.exports = Utils;

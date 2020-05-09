@@ -17,7 +17,7 @@
 
 const __glasstron = Object.assign({}, require("glasstron"));
 const glasstronPath = require.resolve("glasstron");
-const utils = require("./utils.js");
+const Utils = require("./utils.js");
 
 class GlasstronWrapper{
 	static _glasscord_disableGlasstron(){
@@ -48,8 +48,5 @@ class GlasstronWrapper{
 		return __glasstron.getPlatform();
 	}
 }
-
-if(typeof utils.config.disableGlasstronApi === "undefined" || utils.config.disableGlasstronApi)
-	GlasstronWrapper._glasscord_disableGlasstron();
 
 module.exports = GlasstronWrapper;

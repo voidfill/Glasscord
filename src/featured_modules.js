@@ -23,7 +23,7 @@ const crypto = require("crypto");
 const URL = "https://api.github.com/repos/AryToNeX/Glasscord-Modules/git/trees/";
 const FilePattern = "https://raw.githubusercontent.com/AryToNeX/Glasscord-Modules/{SHA}/{PATH}";
 const options = {headers: {"user-agent": "glasscord"}};
-const modulePath = path.join(Utils.getSavePath(), "modules");
+const modulePath = path.join(Utils.getSavePath(), "_modules");
 
 var appName = Utils.getRootAppName();
 

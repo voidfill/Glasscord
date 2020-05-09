@@ -37,7 +37,7 @@ const blacklistFilenames = [
 
 traverseDeps(src, undefined, filenames);
 
-asar.createPackageFromFiles(src, "glasscord.asar", filenames.filter(x => !blacklistFilenames.includes(x)))
+asar.createPackageFromFiles(src, "glasscord.asar", filenames.filter(x => !blacklistFilenames.includes(x)).filter((x, i, s) => s.indexOf(x) === i))
 	.then(() => console.log("Packaging done"))
 	.catch(e => console.log("Something went wrong: " + e));
 
@@ -54,7 +54,6 @@ function traverseDeps(startPath, dependency = undefined, filenames = []){
 	if(typeof pathToBackup !== "undefined") filenames.push(...glob.sync(pathToBackup));
 	
 	for(let dependency in pak.dependencies){
-		console.log("Including dependency: " + dependency);
 		traverseDeps(startPath, dependency, filenames);
 	}
 }

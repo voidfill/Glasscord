@@ -22,7 +22,7 @@ const pak = require("../package.json");
 const options = {headers: {"user-agent": "glasscord"}};
 
 module.exports = function(){
-	if(!Utils.globalConfig.autoUpdate) return console.log("Glasscord autoupdate is disabled!");
+	if(!Utils.getGlobalConfig().config.autoUpdate) return console.log("Glasscord autoupdate is disabled!");
 	
 	if(path.extname(path.join(__dirname, "..")) == ".asar"){ // Are we inside an asar?
 		console.log("You are running a packaged Glasscord installation!"); // Yes.

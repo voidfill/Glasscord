@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/AryToNeX/Glasscord#readme",
   "dependencies": {
+    "fs-extra": "^9.0.0",
     "glasstron": "github:AryToNeX/Glasstron"
   },
   "devDependencies": {

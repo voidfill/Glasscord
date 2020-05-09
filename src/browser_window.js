@@ -32,7 +32,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		if(typeof options.webPreferences.preload !== "undefined")
 			_preload = options.webPreferences.preload;
 		options.webPreferences.preload = path.join(__dirname, "preload.js");
-		Object.assign(options, Utils.getWindowProperties());
+		Object.assign(options, Main.getInstance().appConfig.windowProps);
 		// We do not call super to get an actual BrowserWindow from electron and not mess with native casts (broke GTK modals)
 		const window = new electron.BrowserWindow(options);
 		window.webContents._preload = _preload;

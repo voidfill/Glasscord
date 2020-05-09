@@ -16,7 +16,7 @@
 "use strict";
 
 const electron = require("electron");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const Utils = require("./utils.js");
 const pak = require("../package.json");
@@ -25,6 +25,10 @@ module.exports = class Main{
 	constructor(){
 		// Let's register our event listeners now.
 		this._eventListener();
+		
+		// Load app config
+		this._appConfigObj = Utils.getAppConfig();
+		this.appConfig = this._appConfigObj.config;
 		
 		// Let's read our modules now
 		this._loadInternalModules();
@@ -65,7 +69,7 @@ module.exports = class Main{
 	}
 	
 	_loadExternalModules(){
-		return this._loadModules(path.resolve(Utils.getSavePath(), "modules"));
+		return this._loadModules(path.resolve(Utils.getSavePath(), "_modules"));
 	}
 	
 	_loadModules(modulePath){
@@ -73,22 +77,25 @@ module.exports = class Main{
 			this.modules = {};
 		
 		try{
-			if(!fs.existsSync(modulePath))
-				fs.mkdirSync(modulePath);
+			fs.ensureDirSync(modulePath);
 		}catch(e){} // This should only work outside of the ASAR file btw
 		
 		for(let file of fs.readdirSync(modulePath)){
 			if(file.endsWith(".js")){
 				let module = require(path.join(modulePath, file));
 				if(module.isApplicable()){
-					Utils.initializeModuleConfig(module.prototype.constructor.name, module.defaultConfig, module.isCore);
-					if(!module.isCore && !Utils.isModuleEnabled(module.prototype.constructor.name)) continue;
-					if(typeof this.modules[module.prototype.constructor.name] !== "undefined") continue;
+
+					if(!module.isCore) // The module is not core
+						if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
+							this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
+						else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
+							continue; // skip it
+
 					this.modules[module.prototype.constructor.name] = new module();
 				}
 			}
 		}
-		Utils.saveConfig();
+		this._appConfigObj.save();
 	}
 	
 	/**
