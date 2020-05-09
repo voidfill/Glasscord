@@ -22,6 +22,7 @@ const Main = require("./main.js");
 module.exports = class Module{
 	static isCore = false;
 	static defaultOn = false;
+	static ensureConfigFile = false;
 
 	static platform = [];
 	static platformExclude = [];
@@ -34,7 +35,7 @@ module.exports = class Module{
 	cssProps = [];
 
 	constructor(){
-		this._configObj = Utils.getModuleConfig(this.constructor.name, this.constructor.defaultConfig);
+		this._configObj = Utils.getModuleConfig(this.constructor.name, this.constructor.defaultConfig, this.constructor.ensureConfigFile);
 		this.config = this._configObj.config;
 		this.logGlobal("Module loaded!");
 	}

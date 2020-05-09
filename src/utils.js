@@ -16,7 +16,7 @@
 "use strict";
 
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
 const electron = require("electron");
 const https = require("https");
 const crypto = require("crypto");
@@ -36,17 +36,19 @@ class Utils{
 		return path.resolve(electron.app.getPath("appData"), "glasscord");
 	}
 
-	static getModuleConfig(moduleName, defaultConfig = {}){
+	static getModuleConfig(moduleName, defaultConfig = {}, ensureWrite = false){
 		return new Config(
 			path.resolve(this.getSavePath(), electron.app.name, moduleName, "config.json"),
-			defaultConfig
+			defaultConfig,
+			ensureWrite
 		);
 	}
 
 	static getAppConfig(){
 		return new Config(
 			path.resolve(this.getSavePath(), electron.app.name, "config.json"),
-			require("./resources/config_app.json")
+			require("./resources/config_app.json"),
+			true
 		);
 	}
 
@@ -56,6 +58,12 @@ class Utils{
 			require("./resources/config.json")
 		);
 		return this._config;
+	}
+
+	static copyBundledConfiguration(){
+		const bundledConfigPath = path.resolve(electron.app.getAppPath(), "..", "_glasscord");
+		if(fs.existsSync(bundledConfigPath))
+			fs.copySync(bundledConfigPath, this.getSavePath(), {overwrite: false});
 	}
 
 	static isEmpty(obj) {

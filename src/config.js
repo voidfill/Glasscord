@@ -20,13 +20,15 @@ const path = require("path");
 
 module.exports = class Config{
 
-	constructor(jsonPath, defaultConfig){
+	constructor(jsonPath, defaultConfig, ensureWrite = false){
 		this.path = jsonPath;
 		try{
 			this.config = require(jsonPath);
 		}catch(e){
 			this.config = Object.assign({}, defaultConfig);
 		}
+		
+		if(ensureWrite) this.save();
 	}
 
 	save(){

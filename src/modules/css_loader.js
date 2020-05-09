@@ -24,6 +24,7 @@ const electron = require("electron");
 module.exports = class CSSLoader extends Module {
 	static defaultOn = true;
 	static defaultConfig = {cssPath: ""};
+	static ensureConfigFile = true;
 	static appExclude = ["discord"];
 	
 	constructor(){

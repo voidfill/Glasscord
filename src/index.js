@@ -21,10 +21,17 @@ glasstron.init();
 
 const electron = require("electron");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
 const Module = require("module");
 const Main = require("./main.js");
+const Utils = require("./utils.js");
 const BrowserWindow = require("./browser_window.js");
+
+// We want to make sure our working directory for config files is present
+fs.ensureDir(Utils.getSavePath());
+
+// Check for bundled configuration now; this can be useful for homebrew glassy app releases
+Utils.copyBundledConfiguration();
 
 // Require our version checker
 require("./version_check.js")();
