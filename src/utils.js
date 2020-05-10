@@ -79,11 +79,11 @@ class Utils{
 	static httpsGet(url, options, callback){
 		https.get(url, options, result => {
 			if(result.statusCode == 301 || result.statusCode == 302){
-				get(result.headers.location, options, callback);
+				this.httpsGet(result.headers.location, options, callback);
 				return;
 			}
-			let data = "";
-			result.on("data", chunk => data += chunk);
+			let data = Buffer.alloc(0);
+			result.on("data", chunk => {data = Buffer.concat([data, chunk])});
 			result.on("end", () => {
 				result.data = data;
 				callback(result);
