@@ -1,4 +1,4 @@
-# ![Glasscord](images/glasscord_banner.png)
+# ![Glasscord](images/glasscord_banner.svg)
 Providing composition effects to Electron applications.
 
 [![ko-fi](https://www.ko-fi.com/img/donate_sm.png)](https://ko-fi.com/K3K3D0E0)
