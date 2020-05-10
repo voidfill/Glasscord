@@ -31,7 +31,7 @@
 
 	/* Windows-specific properties */
 	/* Blur mode. Available types: acrylic (strong blur), blurbehind (light blur), transparent */
-	--glasscord-win-blur: acrylic;
+	--glasscord-win-blur: blurbehind;
 
 	/* macOS-specific properties */
 	/* Vibrancy mode */
