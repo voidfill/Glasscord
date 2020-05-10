@@ -152,9 +152,8 @@
 	padding-top: 4px;
 }
 
-.premiumPromo-yVfLiA {
+.premiumPromo-fVlLu- {
 	background-color: var(--background-secondary-chat);
-	backdrop-filter: blur(2px);
 }
 
 .unread-3zKkbm {
@@ -198,6 +197,10 @@
     -webkit-app-region: no-drag;
 }
 
+.platform-osx .toolbar-1t6TWx {
+    -webkit-app-region: no-drag;
+}
+
 .messagesPopoutWrap-1MQ1bW {
 	background-color: var(--background-pinned);
 }
@@ -209,7 +212,7 @@
 	box-shadow: none;
 }
 
-.emojiPicker-3m1S-j {
+.contentWrapper-2txmjs {
 	background-color: var(--background-emoji);
 }
 
