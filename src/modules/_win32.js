@@ -21,19 +21,11 @@ const Module = require("../module.js");
 module.exports = class Win32 extends Module{
 	static isCore = true;
 	static platform = ["win32"];
-	cssProps = ["--glasscord-win-blur", "--glasscord-win-performance-mode"];
+	cssProps = ["--glasscord-win-blur"];
 	
 	update(win, cssProp, value){
-		switch(cssProp){
-			case "--glasscord-win-blur":
-				if(typeof value === "undefined" || value === null)
-					value = "none";
-				glasstron.update(win, {windows: {blurType: value}});
-				break;
-			case "--glasscord-win-performance-mode":
-				value = (typeof value === "string" && value.toLowerCase() === "true");
-				glasstron.update(win, {windows: {performanceMode: value}});
-				break;
-		}
+		if(typeof value === "undefined" || value === null)
+			value = "none";
+		glasstron.update(win, {windows: {blurType: value}});
 	}
 }

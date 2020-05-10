@@ -32,9 +32,6 @@
 	/* Windows-specific properties */
 	/* Blur mode. Available types: acrylic (strong blur), blurbehind (light blur), transparent */
 	--glasscord-win-blur: acrylic;
-	/* Acrylic mode makes some computers pretty unresponsive when resizing/moving the window.
-	   Should we work around it? */
-	--glasscord-win-performance-mode: true;
 
 	/* macOS-specific properties */
 	/* Vibrancy mode */

@@ -153,18 +153,7 @@ Sets the blur type on Windows.
 - `acrylic` refers to the strong blur used in Microsoft's Fluent Design. Note: it can be slow when
 dragging/resizing on some Windows versions.
 - `blurbehind` is a weaker blur than the other one, and it kinda resembles the good old Aero Glass effect.
-- `transparent` means no blur at all, so the window is just transparent.
-
-### `--glasscord-win-performance-mode` (Windows)
-#### accepts a `bool`; defaults to `true`
-If you're using `acrylic` as the blur type used on Windows, setting this property will use the `blurbehind` blur type
-when you're resizing or moving a window.
-
-This is lame, but since some Windows versions are affected by an annoying bug causing a slowdown upon
-resizing/moving the Discord window,
-there was really no other choice but to implement it.
-
-Let's hope for Microsoft to fix this bug in upcoming Windows releases.
+- `transparent` means no blur at all, so the window is just transparent..
 
 ### `--glasscord-macos-vibrancy` (macOS)
 #### accepts a value between those ones: `titlebar`, `selection`, `menu`, `popover`, `sidebar`, `header`, `sheet`, `window`, `hud`, `fullscreen-ui`, `tooltip`, `content`, `under-window`, `under-page`, `none`; defaults to `none`
@@ -196,6 +185,8 @@ You can still manually blur Discord's window via Compiz, Compton and similar com
 #### Deprecated CSS variables
 - `--glasscord-enable` was deprecated: it only really worked on Windows.
 - `--glasscord-tint` was deprecated: it was basically a super buggy alias to `body { background-color: [...]; }`.
+- `--glasscord-win-performance-mode` was deprecated: it bugged out the whole window and it was a workaround for 
+crappy MS Windows APIs which are crappy anyway and they show through.
 
 ## I want to contribute to this madness!
 Did you find a bug? File it in the issues section!
