@@ -201,6 +201,11 @@
     -webkit-app-region: no-drag;
 }
 
+
+.platform-osx .topic-TCb_qw {
+    -webkit-app-region: no-drag;   
+}
+
 .messagesPopoutWrap-1MQ1bW {
 	background-color: var(--background-pinned);
 }
