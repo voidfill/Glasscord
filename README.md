@@ -12,15 +12,19 @@ Providing composition effects to Electron applications.
 ![Glasscord + VSCode](images/preview_vscode.png)
 
 ### What is it?
-Glasscord is a really simple tool that enables window composition effects (transparency and frosted glass effects) on Electron apps,
-such as Discord and Visual Studio Code; however it can be expanded to work with *almost any* Electron app.
+Glasscord is a really simple tool based on [Glasstron](https://github.com/AryToNeX/Glasstron)
+that enables window composition effects (transparency and frosted glass effects) on Electron apps,
+such as Discord and Visual Studio Code; however it can work with *almost any* Electron app.
 
 It is compatible with Windows, Linux and macOS.
+
+More functionalities are achievable by extending Glasscord with modules.
+You can find more on [the Glasscord-Modules repo](https://github.com/AryToNeX/Glasscord-Modules).
 
 ### So, is it a theme?
 Glasscord is NOT a theme. It's a tool that enables themes to request composition effects.
 
-To put it in other, more simple words, you will need a theme that supports Glasscord to be able to see it in action.
+To put it in other, more simple words, you will need a theme that uses Glasscord's "CSS API" to be able to see it in action.
 
 ### But why?
 I was bored and I made an early proof of concept to post on [r/unixporn](https://www.reddit.com/r/unixporn/comments/fu0bqh/kde_stop_blurry_discord/).
@@ -31,10 +35,7 @@ _TL;DR: Help me I have no purpose in this life anymore_
 ## How do I install it?
 Well, glad you asked!
 
-### Visual Studio Code (+ potentially any other Electron app) instructions
-
-- ~~Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.~~
-  **VSCODE+ SUPPORT IS STILL UNDER HEAVY DEVELOPMENT -- NO RELEASES ARE PLANNED! YOU MUST PACKAGE YOUR OWN `glasscord.asar` TO USE IT**
+- Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
 - Locate your Electron app installation folder. We will assume it being the root directory from now on.
 - Locate the `resources` folder. Inside it you'll likely have an `app.asar` file OR an `app` folder.
 
@@ -66,84 +67,33 @@ Well, glad you asked!
   ```
 - If everything was done correctly, the Electron app should start and Glasscord should be injected.
 
+#### Notes for Discord
 
-### Discord instructions
+Glasscord's own CSS loader was forcefully disabled on Discord to avoid conflicts with other client mods.
 
-- First of all, you need to download and install a CSS loader of your choice.
-  We can recommend (and we've tested) those client mods/CSS loaders:
-  - [BandagedBD](https://github.com/rauenzi/BetterDiscordApp)
-  - [BeautifulDiscord](https://github.com/leovoel/BeautifulDiscord)
-  - [EnhancedDiscord](https://github.com/joe27g/EnhancedDiscord)
-
-  Keep in mind that Glasscord may work with other CSS loaders and client mods too.
-  
-  After you installed the CSS loader properly, you can continue following this guide.
-  
-  **Note:** Glasscord's own CSS loader was forcefully disabled on Discord to avoid conflicts with other client mods.
-- Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
-- Locate your Discord Desktop Core module folder. In the respective file paths, `x.x.x` corresponds to the version number.
-  - On Windows, it is `%AppData%\discord\x.x.x\modules\discord_desktop_core\`
-  - On macOS, it is `~/Library/Application Support/discord/x.x.x/modules/discord_desktop_core/`
-  - On Linux we must make distinction between three main cases:
-    - If you installed Discord via .tar.gz, .deb or the AUR on Arch/Manjaro, it is `$HOME/.config/discord/x.x.x/modules/discord_desktop_core/`
-    - If you installed it via Snap package, it is `$HOME/snap/discord/current/.config/discord/x.x.x/modules/discord_desktop_core/`
-    - If you installed it via Flatpak, it is `$HOME/.var/app/com.discordapp.Discord/config/discord/x.x.x/modules/discord_desktop_core/`
-
-    Everything said here assumes that you're using the stable release.
-    If you are using Public Test Beta (`discordptb`) or Canary (`discordcanary`), please look for the according configuration path.
-    Also, please note that if you installed Discord via Snap/Flatpak, the blur behind effect will most likely fail to load
-    (that's because the `xprop` tool is not available to the app container).
-- Put the `glasscord.asar` file inside that folder.
-- If you are on Linux, you should make sure that you have the `xprop` package installed.
-- Edit the `index.js` file which was already in that folder.
-  
-  The text inside that file
-  ```js
-  // THE TEXT BELOW IS JUST AN EXAMPLE OF WHAT CAN BE INSIDE THE INDEX.JS FILE -- DO NOT COPY
-  module.exports = require('your other awesome mods or the core.asar from Discord');
-  ```
-  should become
-  ```js
-  require('./glasscord.asar');
-  // THE TEXT BELOW IS JUST AN EXAMPLE OF WHAT CAN BE INSIDE THE INDEX.JS FILE -- DO NOT COPY
-  module.exports = require('your other awesome mods or the core.asar from Discord');
-  ```
-  so you really have to write `require('./glasscord.asar');` at the **absolute beginning** of that file.
-- **If you forgot to install a CSS loader and you've noticed it now because of this sentence written in bold, please do it and then repeat the previous step!**
-- You can now start Discord and Glasscord would be running!
-  Please read the paragraph below to know more about how to use this tool.
+You need a third party CSS loader to load Discord themes. You also need to install it FIRST,
+then install Glasscord AFTER you completed the other installation. This WILL BREAK the ability of
+the third party CSS loader to auto-update itself, so be warned!
 
 ## How do I USE it?
 Assuming you already installed everything correctly, you will need to load a custom CSS theme which supports Glasscord.
 
-If you want to just try Glasscord on Discord, you can load the `discord_example.theme.css` (which is in the `extras` folder of the repository for you to download).
+If you want to just try Glasscord on Discord, you can load the `discord_example.theme.css` (which is in
+the `extras` folder of the repository for you to download).
 
 If you're using a third-party CSS loader, please refer to your CSS loader's documentation to know how to load CSS stylesheets.
 
-If you're using Glasscord's own CSS loader, you can configure it easily by editing the `glasscord_config.json` file which sits right where `glasscord.asar` is:
-```json
-{
-  "modules": {
-    "CSSLoader": {
-      "enabled": true,
-      "config": {
-        "cssPath": "/path/to/your.css"
-      }
-    }
-  }
-}
-```
-
-## Is it compatible with _[name of random Discord plugin loader here]_?
-If installed properly, Glasscord won't interfere with any modern plugin loaders.
-In fact, I tested it with EnhancedDiscord and BandagedBD and it works flawlessly!
+If you're using Glasscord's own CSS loader, you can configure it easily by editing the configuration files in:
+- Windows: `%appdata%/glasscord`;
+- Linux: `~/.config/glasscord`; this may vary if you installed Glasscord on a Snap/Flatpak package.
+- macOS: `~/Library/Application Support/glasscord`.
 
 ## Is it compatible with _[name of random Electron app here]_?
 Try it for yourself and let us know!
 
 ## Hey buddy, I am a theme creator; how should I support Glasscord in my own themes?
 Glasscord will look for some CSS properties defined in the `:root` CSS selector.
-Please take a look at the `glasscord_example.theme.css` file to better understand how they are used.
+Please take a look at the `discord_example.theme.css` file to better understand how they are used.
 
 Here's a straightforward CSS properties explaination. Let's go through them one by one; shall we?
 
@@ -175,18 +125,9 @@ If set to `none`, the vibrancy effect will not be applied but the window will be
 
 ### `--glasscord-linux-blur` (Linux)
 #### accepts a `bool`; defaults to `true`
-Tells the window compositor whether to blur behind Discord or not.
+Tells the window compositor whether to blur behind windows or not.
 
-**Note:** for this setting to work, you should be running an X session. Wayland support is not possible at this stage.
-You should also be running a supported window compositor, and Glasscord currently only supports KWin.
-
-You can still manually blur Discord's window via Compiz, Compton and similar compositors which support blurring windows manually.
-
-#### Deprecated CSS variables
-- `--glasscord-enable` was deprecated: it only really worked on Windows.
-- `--glasscord-tint` was deprecated: it was basically a super buggy alias to `body { background-color: [...]; }`.
-- `--glasscord-win-performance-mode` was deprecated: it bugged out the whole window and it was a workaround for 
-crappy MS Windows APIs which are crappy anyway and they show through.
+**Note:** Check the Glasstron project to see which window servers/managers are compatible
 
 ## I want to contribute to this madness!
 Did you find a bug? File it in the issues section!

@@ -12,7 +12,8 @@ A clear and concise description of what the bug is.
 
 **Note:** This issue section is for Glasscord only!
 DO NOT report other apps' issues.
-More specifically, DO NOT REPORT ANYTHING RELATED SPECIFICALLY TO GLASSTRON HERE!
+More specifically, DO NOT REPORT ANYTHING RELATED
+SPECIFICALLY TO GLASSTRON OR GLASSCORD MODULES HERE!
 
 **To Reproduce**
 Steps to reproduce the behavior:
