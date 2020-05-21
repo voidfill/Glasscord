@@ -1,15 +1,15 @@
 {
   "name": "glasscord",
-  "author": "Naomi Calabretta <me@arytonex.pw> (http://arytonex.pw)",
   "version": "0.2.0",
   "description": "Injecting composition effects into Electron applications",
-  "funding": {
-    "url": "https://patreon.com/arytonex"
-  },
   "main": "src/index.js",
   "scripts": {
     "package": "node package.js",
     "install": "npm run package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AryToNeX/Glasscord.git"
   },
   "keywords": [
     "electron",
@@ -20,6 +20,11 @@
     "injector",
     "injection"
   ],
+  "author": "Naomi Calabretta <me@arytonex.pw> (http://arytonex.pw)",
+  "license": "Apache-2.0",
+  "funding": {
+    "url": "https://patreon.com/arytonex"
+  },
   "bugs": {
     "url": "https://github.com/AryToNeX/Glasscord/issues"
   },
