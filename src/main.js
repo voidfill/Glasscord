@@ -69,6 +69,11 @@ module.exports = class Main{
 	}
 	
 	_loadExternalModules(){
+		// ensure the modules directory exists
+		try{
+			fs.ensureDirSync(path.resolve(Utils.getSavePath(), "_modules"));
+		}catch(e){}
+
 		return this._loadModules(path.resolve(Utils.getSavePath(), "_modules"));
 	}
 	
@@ -76,16 +81,21 @@ module.exports = class Main{
 		if(typeof this.modules === "undefined")
 			this.modules = {};
 		
-		try{
-			fs.ensureDirSync(modulePath);
-		}catch(e){} // This should only work outside of the ASAR file btw
-		
 		for(let file of fs.readdirSync(modulePath))
-			if(file.endsWith(".js"))
-				this.loadModule(path.resolve(modulePath, file));
+			this.loadModule(path.resolve(modulePath, file));
 	}
 
 	loadModule(moduleFile){
+		let parsedFile = path.parse(moduleFile);
+		if(parsedFile.ext !== ".js") return false;
+
+		if(parsedFile.root == "" && parsedFile.dir == "" && !fs.existsSync(parsedFile.base))
+			// we might be referring to an internal module!
+			if(fs.readdirSync(path.resolve(__dirname, "modules")).includes(parsedFile.base))
+				moduleFile = path.resolve(__dirname, "modules", parsedFile.base);
+			else
+				return false; // file does not exist
+
 		let module = require(moduleFile);
 		if(module.isApplicable()){
 
@@ -93,11 +103,15 @@ module.exports = class Main{
 				if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
 					this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
 				else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
-					return; // skip it
+					return false; // skip it
+
+			if(typeof this.modules[module.prototype.constructor.name] !== "undefined") return false;
 
 			this.modules[module.prototype.constructor.name] = new module();
+			this._appConfigObj.save();
+			return true;
 		}
-		this._appConfigObj.save();
+		return false;
 	}
 
 	unloadModule(module){
