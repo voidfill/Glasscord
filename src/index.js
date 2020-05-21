@@ -36,11 +36,11 @@ Utils.copyBundledConfiguration();
 // Require our version checker
 require("./version_check.js")();
 
-// Require the featured modules downloader
-require("./featured_modules.js")();
-
 // Inject the GlasscordApi module for third party communication (on Main)
 injectGlasscordNodeModule();
+
+// Require the featured modules downloader
+require("./featured_modules.js")();
 
 // Init main meanwhile we check if we should disable the Glasstron API
 if(typeof Main.getInstance().appConfig.disableGlasstronApi === "undefined" || Main.getInstance().appConfig.disableGlasstronApi)

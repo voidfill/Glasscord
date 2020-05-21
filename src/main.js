@@ -80,24 +80,40 @@ module.exports = class Main{
 			fs.ensureDirSync(modulePath);
 		}catch(e){} // This should only work outside of the ASAR file btw
 		
-		for(let file of fs.readdirSync(modulePath)){
-			if(file.endsWith(".js")){
-				let module = require(path.join(modulePath, file));
-				if(module.isApplicable()){
+		for(let file of fs.readdirSync(modulePath))
+			if(file.endsWith(".js"))
+				this.loadModule(path.resolve(modulePath, file));
+	}
 
-					if(!module.isCore) // The module is not core
-						if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
-							this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
-						else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
-							continue; // skip it
+	loadModule(moduleFile){
+		let module = require(moduleFile);
+		if(module.isApplicable()){
 
-					this.modules[module.prototype.constructor.name] = new module();
-				}
-			}
+			if(!module.isCore) // The module is not core
+				if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
+					this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
+				else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
+					return; // skip it
+
+			this.modules[module.prototype.constructor.name] = new module();
 		}
 		this._appConfigObj.save();
 	}
-	
+
+	unloadModule(module){
+		if(typeof module === "string") module = this.getModule(module);
+		if(typeof module === "undefined") return false;
+		if(module.constructor.isCore) return false;
+		for(let _mod in this.modules){
+			if(this.modules[_mod] === module){
+				this.modules[_mod].shutdown();
+				delete this.modules[_mod];
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * This is the method that gets called whenever a variable update is requested.
 	 * It is DARN IMPORTANT to keep ALL the variables up to date!

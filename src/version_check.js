@@ -16,7 +16,7 @@
 "use strict";
 
 const path = require("path");
-const fs = require("fs");
+const fs = require("original-fs");
 const Utils = require("./utils.js");
 const pak = require("../package.json");
 const options = {headers: {"user-agent": "glasscord"}};
@@ -26,7 +26,17 @@ module.exports = function(){
 	
 	if(path.extname(path.join(__dirname, "..")) == ".asar"){ // Are we inside an asar?
 		console.log("You are running a packaged Glasscord installation!"); // Yes.
-		let asarName = path.join(path.dirname(__dirname), path.basename(__dirname, ".asar")); // result is whatever-the-dir/glasscord (without the .asar at the end)
+		
+		// Check write access in the directory.
+		try{
+			fs.accessSync(path.resolve(__dirname, "..", ".."), fs.constants.R_OK | fs.constants.W_OK); // asar directory
+			fs.accessSync(path.resolve(__dirname, ".."), fs.constants.R_OK | fs.constants.W_OK); // asar itself
+		}catch(e){
+			console.log("No write access to the installation folder! Glasscord won't auto update!");
+			return;
+		}
+		
+		let asarName = path.join(path.dirname(path.join(__dirname, "..")), path.basename(path.join(__dirname, ".."), ".asar")); // result is whatever-the-dir/glasscord (without the .asar at the end)
 		// CALL TO THE GITHUB RELEASES API
 		Utils.httpsGet("https://api.github.com/repos/AryToNeX/Glasscord/releases/latest", options, result => {
 			// Let's check the error

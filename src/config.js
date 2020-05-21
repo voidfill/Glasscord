@@ -23,7 +23,7 @@ module.exports = class Config{
 	constructor(jsonPath, defaultConfig, ensureWrite = false){
 		this.path = jsonPath;
 		try{
-			this.config = require(jsonPath);
+			this.config = Object.assign({}, defaultConfig, require(jsonPath));
 		}catch(e){
 			this.config = Object.assign({}, defaultConfig);
 		}

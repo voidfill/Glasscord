@@ -38,13 +38,15 @@ module.exports = class Module{
 		this._configObj = Utils.getModuleConfig(this.constructor.name, this.constructor.defaultConfig, this.constructor.ensureConfigFile);
 		this.config = this._configObj.config;
 		this.logGlobal("Module loaded!");
+		this.onLoad();
 	}
 
-	windowInit(win){}
+	shutdown(){ this.unload(); } // TODO: remove this
 
-	update(win, cssProp, value){}
-
-	shutdown(){}
+	unload(){
+		this.onUnload();
+		this.logGlobal("Module unloaded!");
+	}
 
 	log(webContents, message, level = "log"){
 		message = `[${this.constructor.name}] ${message}`;
@@ -74,5 +76,10 @@ module.exports = class Module{
 		return true;
 	}
 
+	// Overridable stuff
+	onLoad(){}
+	onUnload(){}
+	windowInit(win){}
+	update(win, cssProp, value){}
 
 }
