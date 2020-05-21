@@ -26,22 +26,44 @@ module.exports = class CSSLoader extends Module {
 	static defaultConfig = {cssPath: ""};
 	static ensureConfigFile = true;
 	static appExclude = ["discord"];
-	
-	constructor(){
-		super();
+
+	onLoad(){
+		this.injectionMap = {};
+		
 		if(!this.config.cssPath) this.config.cssPath = "";
 		
 		if(this.config.cssPath.length !== 0 && !path.isAbsolute(this.config.cssPath))
 			this.config.cssPath = path.resolve(this.getStoragePath(), this.config.cssPath);
+		
+		for(let win of electron.BrowserWindow.getAllWindows())
+			this.windowInit(win);
+	}
+
+	onUnload(){
+		for(let webContentsID in this.injectionMap){
+			let webContents = electron.webContents.fromId(parseInt(webContentsID));
+			Main._executeInRenderer(webContents, this._unload);
+			webContents.removeListener("dom-ready", this.injectionMap[webContentsID]);
+			
+			// remove from map
+			delete this.injectionMap[webContentsID];
+		}
 	}
 
 	windowInit(win){
-		win.webContents.on("dom-ready", () => { Main._executeInRenderer(win.webContents, this._load, this.config.cssPath) });
+		if(typeof this.injectionMap[win.webContents.id] !== "undefined") return;
+		this.injectionMap[win.webContents.id] = function(){this._event(win)};
+
+		// check if already ready and update accordingly
+		Main._executeInRenderer(win.webContents, this._getReadyState).then(ready => {
+			if(ready)
+				this._event(win);
+			win.webContents.on("dom-ready", this.injectionMap[win.webContents.id]);
+		});
 	}
 
-	shutdown(){
-		for(let webContents of electron.webContents.getAllWebContents())
-			Main._executeInRenderer(webContents, this._shutdown);
+	_event(win){
+		Main._executeInRenderer(win.webContents, this._load, this.config.cssPath);
 	}
 
 	// Renderer functions
@@ -59,15 +81,14 @@ module.exports = class CSSLoader extends Module {
 			});
 		}
 
-		readFile(cssPath).then(css => {
-			if (!window.GlasscordApi.customCss) {
-				window.GlasscordApi.customCss = document.createElement("style");
-				document.head.appendChild(window.GlasscordApi.customCss);
-			}
+		if(typeof window.GlasscordApi.customCss === "undefined") readFile(cssPath).then(css => {
+			window.GlasscordApi.customCss = document.createElement("style");
+			window.GlasscordApi.customCss.id = "glasscord-custom-css";
+			document.head.appendChild(window.GlasscordApi.customCss);
 			window.GlasscordApi.customCss.innerHTML = css;
 			console.log("%c[Glasscord] %cCustom stylesheet loaded!", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;");
 
-			if (window.GlasscordApi.cssWatcher == null) {
+			if(typeof window.GlasscordApi.cssWatcher === "undefined") {
 				window.GlasscordApi.cssWatcher = fs.watch(cssPath, { encoding: "utf-8" },
 				eventType => {
 					if (eventType == "change" && window.GlasscordApi.customCss) {
@@ -81,11 +102,16 @@ module.exports = class CSSLoader extends Module {
 		}).catch(() => console.warn("%c[Glasscord] %cCustom stylesheet not found. Skipping...", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;"));
 	}
 	
-	_shutdown(){
+	_unload(){
 		if(window.GlasscordApi.cssWatcher) delete window.GlasscordApi.cssWatcher;
 		if(window.GlasscordApi.customCss){
 			document.head.removeChild(window.GlasscordApi.customCss);
 			delete window.GlasscordApi.customCss;
 		}
 	}
+
+	_getReadyState(){
+		return document.readyState === "complete" || document.readyState === "interactive";
+	}
+
 }
