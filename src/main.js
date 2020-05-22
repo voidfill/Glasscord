@@ -45,10 +45,75 @@ module.exports = class Main{
 	}
 	
 	getModule(name){
+		const parsedName = this._getModuleFilePath(name);
+		if(typeof parsedName !== "undefined"){ // it was a file indeed
+			try{
+				let module = require(parsedName);
+				name = module.prototype.constructor.name;
+			}catch(e){
+				return undefined;
+			}
+		}
+
 		return this.modules[name] || undefined;
 	}
 	
+	loadModule(moduleFile){
+		let parsedFile = this._getModuleFilePath(moduleFile);
+		if(typeof parsedFile === "undefined") return false; // file is not JS
+		if(!fs.existsSync(parsedFile)) return false; // file does not exist
+
+		let module = require(parsedFile);
+		if(module.isApplicable()){
+
+			if(!module.isCore) // The module is not core
+				if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
+					this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
+				else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
+					return false; // skip it
+
+			if(typeof this.modules[module.prototype.constructor.name] !== "undefined") return false;
+
+			this.modules[module.prototype.constructor.name] = new module();
+			this._appConfigObj.save();
+			return true;
+		}
+		return false;
+	}
+
+	unloadModule(module){
+		if(typeof module === "string") module = this.getModule(module);
+		if(typeof module === "undefined") return false;
+		if(module.constructor.isCore) return false;
+		for(let _mod in this.modules){
+			if(this.modules[_mod] === module){
+				this.modules[_mod].shutdown();
+				delete this.modules[_mod];
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	// Methods for private use -- don't call them from outside, please
+	
+	_getModuleFilePath(moduleFile){
+		let parsedFile = path.parse(moduleFile);
+		if(parsedFile.ext === ".js"){
+			let file;
+			// we got a js filename
+			if(parsedFile.root == "" && parsedFile.dir == "" && !fs.existsSync(parsedFile.base)){
+				if(fs.readdirSync(path.resolve(__dirname, "modules")).includes(parsedFile.base))
+					// we might be referring to an internal module!
+					return path.resolve(__dirname, "modules", parsedFile.base);
+				else if(fs.readdirSync(path.resolve(Utils.getSavePath(), "_modules")).includes(parsedFile.base))
+					// we might be referring to an external module!
+					return path.resolve(Utils.getSavePath(), "_modules", parsedFile.base);
+			}else
+				return path.resolve(moduleFile);
+		}
+		return undefined;
+	}
 	
 	/**
 	 * This is the event listener. Every fired event gets listened here.
@@ -83,49 +148,6 @@ module.exports = class Main{
 		
 		for(let file of fs.readdirSync(modulePath))
 			this.loadModule(path.resolve(modulePath, file));
-	}
-
-	loadModule(moduleFile){
-		let parsedFile = path.parse(moduleFile);
-		if(parsedFile.ext !== ".js") return false;
-
-		if(parsedFile.root == "" && parsedFile.dir == "" && !fs.existsSync(parsedFile.base))
-			// we might be referring to an internal module!
-			if(fs.readdirSync(path.resolve(__dirname, "modules")).includes(parsedFile.base))
-				moduleFile = path.resolve(__dirname, "modules", parsedFile.base);
-			else
-				return false; // file does not exist
-
-		let module = require(moduleFile);
-		if(module.isApplicable()){
-
-			if(!module.isCore) // The module is not core
-				if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
-					this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
-				else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
-					return false; // skip it
-
-			if(typeof this.modules[module.prototype.constructor.name] !== "undefined") return false;
-
-			this.modules[module.prototype.constructor.name] = new module();
-			this._appConfigObj.save();
-			return true;
-		}
-		return false;
-	}
-
-	unloadModule(module){
-		if(typeof module === "string") module = this.getModule(module);
-		if(typeof module === "undefined") return false;
-		if(module.constructor.isCore) return false;
-		for(let _mod in this.modules){
-			if(this.modules[_mod] === module){
-				this.modules[_mod].shutdown();
-				delete this.modules[_mod];
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
