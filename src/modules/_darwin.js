@@ -24,7 +24,10 @@ module.exports = class Darwin extends Module{
 	cssProps = ["--glasscord-macos-vibrancy"];
 	
 	update(win, cssProp, value){
-		if(!value || value == "none") value = null;
+		if(!value || value == "none")
+			value = null;
+		if(value === "true")
+			value = "fullscreen-ui";
 		glasstron.update(win, {macos: {vibrancy: value}});
 	}
 }

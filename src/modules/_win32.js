@@ -26,6 +26,8 @@ module.exports = class Win32 extends Module{
 	update(win, cssProp, value){
 		if(typeof value === "undefined" || value === null)
 			value = "none";
+		if(value === "true")
+			value = "blurbehind";
 		glasstron.update(win, {windows: {blurType: value}});
 	}
 }
