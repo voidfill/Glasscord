@@ -25,7 +25,6 @@ module.exports = class CSSLoader extends Module {
 	static defaultOn = true;
 	static defaultConfig = {cssPath: ""};
 	static ensureConfigFile = true;
-	static appExclude = ["discord"];
 
 	onLoad(){
 		this.injectionMap = {};
@@ -68,6 +67,8 @@ module.exports = class CSSLoader extends Module {
 
 	// Renderer functions
 	_load(cssPath){
+		if(typeof cssPath === "undefined" || (typeof cssPath === "string" && cssPath.length === 0)) return;
+
 		// We'll use our custom GlasscordApi to require modules
 		const path = GlasscordApi.require("path");
 		const fs = GlasscordApi.require("fs");
