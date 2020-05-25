@@ -65,7 +65,8 @@ process.once("loaded", () => {
 	global.GlasscordApi = Object.assign({}, _GlasscordApi);
 });
 
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener("DOMContentLoaded", (event) => {
+	document.body.classList.add("glasscord");
 	_watchdog(document.head);
 });
 
