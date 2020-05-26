@@ -25,11 +25,17 @@ const rootApps = require("./resources/root_applications.json");
 
 class Utils{
 
+	static getAppName(){
+		if(electron.app.name !== "Electron")
+			return electron.app.name;
+		return path.parse(process.argv[0]).name;
+	}
+
 	static getRootAppName(){
 		for(let rootAppName in rootApps)
 			for(let possibleCurrentApp of rootApps[rootAppName])
-				if(electron.app.name === possibleCurrentApp) return rootAppName;
-		return electron.app.name;
+				if(this.getAppName() === possibleCurrentApp) return rootAppName;
+		return this.getAppName();
 	}
 
 	static getSavePath(){
@@ -38,7 +44,7 @@ class Utils{
 
 	static getModuleConfig(moduleName, defaultConfig = {}, ensureWrite = false){
 		return new Config(
-			path.resolve(this.getSavePath(), electron.app.name, moduleName, "config.json"),
+			path.resolve(this.getSavePath(), this.getAppName(), moduleName, "config.json"),
 			defaultConfig,
 			ensureWrite
 		);
@@ -46,7 +52,7 @@ class Utils{
 
 	static getAppConfig(){
 		return new Config(
-			path.resolve(this.getSavePath(), electron.app.name, "config.json"),
+			path.resolve(this.getSavePath(), this.getAppName(), "config.json"),
 			require("./resources/config_app.json"),
 			true
 		);
