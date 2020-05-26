@@ -19,7 +19,6 @@ const electron = require("electron");
 const fs = require("fs-extra");
 const path = require("path");
 const Utils = require("./utils.js");
-const pak = require("../package.json");
 
 module.exports = class Main{
 	constructor(){

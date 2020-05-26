@@ -15,6 +15,9 @@
 */
 "use strict";
 
+// JSON5
+require("json5/lib/register");
+
 // Glasstron init
 const glasstron = require("./glasstron_wrapper.js");
 glasstron.init();

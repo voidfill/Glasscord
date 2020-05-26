@@ -21,7 +21,7 @@ const electron = require("electron");
 const https = require("https");
 const crypto = require("crypto");
 const Config = require("./config.js");
-const rootApps = require("./resources/root_applications.json");
+const rootApps = require("./resources/root_applications.json5");
 
 class Utils{
 
@@ -44,7 +44,7 @@ class Utils{
 
 	static getModuleConfig(moduleName, defaultConfig = {}, ensureWrite = false){
 		return new Config(
-			path.resolve(this.getSavePath(), this.getAppName(), moduleName, "config.json"),
+			path.resolve(this.getSavePath(), this.getAppName(), moduleName, "config.json5"),
 			defaultConfig,
 			ensureWrite
 		);
@@ -52,16 +52,16 @@ class Utils{
 
 	static getAppConfig(){
 		return new Config(
-			path.resolve(this.getSavePath(), this.getAppName(), "config.json"),
-			require("./resources/config_app.json"),
+			path.resolve(this.getSavePath(), this.getAppName(), "config.json5"),
+			require("./resources/config_app.json5"),
 			true
 		);
 	}
 
 	static getGlobalConfig(){
 		if(!this._config) this._config = new Config(
-			path.resolve(this.getSavePath(), "config.json"),
-			require("./resources/config.json")
+			path.resolve(this.getSavePath(), "config.json5"),
+			require("./resources/config.json5")
 		);
 		return this._config;
 	}

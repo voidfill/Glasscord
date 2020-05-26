@@ -13,29 +13,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-"use strict";
-
-const fs = require("fs-extra");
-const path = require("path");
-const JSON5 = require("json5");
-
-module.exports = class Config{
-
-	constructor(jsonPath, defaultConfig, ensureWrite = false){
-		this.path = jsonPath;
-		try{
-			this.config = Object.assign({}, defaultConfig, require(jsonPath));
-		}catch(e){
-			this.config = Object.assign({}, defaultConfig);
-		}
-		
-		if(ensureWrite) this.save();
-	}
-
-	save(){
-		fs.ensureDirSync(path.dirname(this.path));
-		fs.writeFileSync(this.path, JSON5.stringify(this.config, undefined, 2));
-	}
-
-}
-
+{
+	// Visual Studio Code
+	"Code": [
+		// Official Flavours
+		"Code - OSS",
+		"Code - Insiders",
+		// Forks
+		"VSCodium"
+	],
+	"discord": [
+		// Official Flavours
+		"Discord",
+		"DiscordPTB",
+		"DiscordCanary",
+		"discordptb",
+		"discordcanary",
+		// Injected Client Mods
+		"betterdiscord",
+		"powercord"
+	]
+} 
