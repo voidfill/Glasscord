@@ -51,7 +51,8 @@ module.exports = class CSSLoader extends Module {
 
 	windowInit(win){
 		if(typeof this.injectionMap[win.webContents.id] !== "undefined") return;
-		this.injectionMap[win.webContents.id] = function(){this._event(win)};
+		const _this = this;
+		this.injectionMap[win.webContents.id] = function(){_this._event(win)};
 
 		// check if already ready and update accordingly
 		Main._executeInRenderer(win.webContents, this._getReadyState).then(ready => {
