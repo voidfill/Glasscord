@@ -105,7 +105,7 @@ module.exports = function(){
 							return;
 						}
 						fs.writeFileSync(path.resolve(modulePath, blobBaseName), result.data);
-						Main.getInstence().unloadModule(path.resolve(modulePath, blobBaseName));
+						Main.getInstance().unloadModule(path.resolve(modulePath, blobBaseName));
 						Main.getInstance().loadModule(path.resolve(modulePath, blobBaseName));
 						console.log("[Glasscord Featured Modules] Downloaded and loaded: " + blobBaseName);
 					});
