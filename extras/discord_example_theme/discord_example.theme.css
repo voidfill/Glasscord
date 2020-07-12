@@ -411,3 +411,11 @@
 .scrollableContainer-2NUZem {
 	background-color: var(--background-chatbox);
 }
+
+.members-1998pB {
+	background-color: var(--background-secondary);
+}
+
+.members-1998pB>div {
+	background-color: transparent;
+}
