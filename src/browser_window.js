@@ -35,7 +35,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		Object.assign(options, Main.getInstance().appConfig.windowProps);
 		// We do not call super to get an actual BrowserWindow from electron and not mess with native casts (broke GTK modals)
 		const window = new electron.BrowserWindow(options);
-		window.webContents._preload = _preload;
+		window.webContents._glasscord_preload = _preload;
 		Main.getInstance()._emitWindowInit(window);
 		return window;
 	}
@@ -44,9 +44,9 @@ class BrowserWindow extends electron.BrowserWindow {
 /*
  * Preload querying is handled by this piece of code
  */
-electron.ipcMain.on("_preload", function waitForPreload(e){
-	if(typeof e.sender._preload !== "undefined")
-		e.returnValue = e.sender._preload;
+electron.ipcMain.on("_glasscord_preload", function waitForPreload(e){
+	if(typeof e.sender._glasscord_preload !== "undefined")
+		e.returnValue = e.sender._glasscord_preload;
 	else
 		setTimeout(waitForPreload, 50, e);
 });

@@ -70,6 +70,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
 	_watchdog(document.head);
 });
 
-const _preload = electron.ipcRenderer.sendSync("_preload");
+const _preload = electron.ipcRenderer.sendSync("_glasscord_preload");
 if(typeof _preload == "string") // it exists!
 	_GlasscordApi.require(_preload);
