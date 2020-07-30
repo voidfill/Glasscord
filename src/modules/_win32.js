@@ -15,7 +15,7 @@
 */
 "use strict";
 
-const glasstron = require("../glasstron_wrapper.js");
+const glasstron = require("glasstron");
 const Module = require("../module.js");
 
 module.exports = class Win32 extends Module{

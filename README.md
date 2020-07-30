@@ -35,6 +35,8 @@ _TL;DR: Help me I have no purpose in this life anymore_
 ## How do I install it?
 Well, glad you asked!
 
+**Warning: Injecting into Electron applications which already make use of the Glasstron Core Module is not supported and will never be! If you want to customize those applications, please reach out to "app-specific" modules and injectors!**
+
 - Look in the Releases section for the latest released version of Glasscord. Download the `glasscord.asar` file from there.
 - Locate your Electron app installation folder. We will assume it being the root directory from now on.
 - Locate the `resources` folder. Inside it you'll likely have an `app.asar` file OR an `app` folder.

@@ -19,7 +19,7 @@
 require("json5/lib/register");
 
 // Glasstron init
-const glasstron = require("./glasstron_wrapper.js");
+const glasstron = require("glasstron");
 glasstron.init();
 
 const electron = require("electron");
@@ -45,9 +45,8 @@ injectGlasscordNodeModule();
 // Require the featured modules downloader
 require("./featured_modules.js")();
 
-// Init main meanwhile we check if we should disable the Glasstron API
-if(typeof Main.getInstance().appConfig.disableGlasstronApi === "undefined" || Main.getInstance().appConfig.disableGlasstronApi)
-	glasstron._glasscord_disableGlasstron();
+// Init main
+Main.getInstance();
 
 // Inject Glasscord's stuff
 injectGlasscordClass();
