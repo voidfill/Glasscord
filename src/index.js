@@ -18,10 +18,6 @@
 // JSON5
 require("json5/lib/register");
 
-// Glasstron init
-const glasstron = require("glasstron");
-glasstron.init();
-
 const electron = require("electron");
 const path = require("path");
 const fs = require("fs-extra");

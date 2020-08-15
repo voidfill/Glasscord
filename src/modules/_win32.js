@@ -15,7 +15,6 @@
 */
 "use strict";
 
-const glasstron = require("glasstron");
 const Module = require("../module.js");
 
 module.exports = class Win32 extends Module{
@@ -24,10 +23,11 @@ module.exports = class Win32 extends Module{
 	cssProps = ["--glasscord-win-blur"];
 	
 	update(win, cssProp, value){
-		if(typeof value === "undefined" || value === null)
-			value = "none";
-		if(value === "true")
-			value = "blurbehind";
-		glasstron.update(win, {windows: {blurType: value}});
+		if(typeof value === "undefined" || value === null){
+			win.setBlur(false);
+			return;
+		}
+		win.setBlur(true);
+		win.blurType = value;
 	}
 }

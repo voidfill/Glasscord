@@ -16,6 +16,7 @@
 "use strict";
 
 const electron = require("electron");
+const glasstron = require("glasstron");
 const path = require("path");
 const Main = require("./main.js");
 const Utils = require("./utils.js");
@@ -34,7 +35,7 @@ class BrowserWindow extends electron.BrowserWindow {
 		options.webPreferences.preload = path.join(__dirname, "preload.js");
 		Object.assign(options, Main.getInstance().appConfig.windowProps);
 		// We do not call super to get an actual BrowserWindow from electron and not mess with native casts (broke GTK modals)
-		const window = new electron.BrowserWindow(options);
+		const window = new glasstron.BrowserWindow(options);
 		window.webContents._glasscord_preload = _preload;
 		Main.getInstance()._emitWindowInit(window);
 		return window;

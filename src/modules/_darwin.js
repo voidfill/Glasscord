@@ -15,8 +15,7 @@
 */
 "use strict";
 
-const glasstron = require("glasstron");
-const Module = require("../module.js")
+const Module = require("../module.js");
 
 module.exports = class Darwin extends Module{
 	static isCore = true;
@@ -28,6 +27,6 @@ module.exports = class Darwin extends Module{
 			value = null;
 		if(value === "true")
 			value = "fullscreen-ui";
-		glasstron.update(win, {macos: {vibrancy: value}});
+		win.setVibrancy(value);
 	}
 }

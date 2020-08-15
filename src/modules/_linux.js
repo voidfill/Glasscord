@@ -15,7 +15,7 @@
 */
 "use strict";
 
-const glasstron = require("glasstron");
+const Glasstron = require("glasstron");
 const Module = require("../module.js");
 
 module.exports = class Linux extends Module{
@@ -25,10 +25,10 @@ module.exports = class Linux extends Module{
 	
 	update(win, cssProp, value){
 		value = (typeof value === "string" && value.toLowerCase() === "true");
-		glasstron.update(win, {linux: {requestBlur: value}});
+		win.setBlur(value);
 	}
 	
 	_getXWindowManager(){
-		return glasstron.getPlatform()._getXWindowManager();
+		return Glasstron.getPlatform()._getXWindowManager();
 	}
 }
