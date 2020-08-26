@@ -44,6 +44,10 @@ require("./featured_modules.js")();
 // Init main
 Main.getInstance();
 
+// if we're on linux, we should delay the ready event
+if(process.platform === "linux")
+	delayReadyEvent(Main.getInstance().appConfig.startupDelayMs || 0);
+
 // Inject Glasscord's stuff
 injectGlasscordClass();
 module.exports = {isGlasscord: true};
@@ -94,4 +98,16 @@ function injectGlasscordNodeModule(){
 		if(request == "glasscord") request = path.resolve(__dirname, "api.js");
 		return oldResolveFilename.call(this, request, parentModule, isMain, options);
 	}
+}
+
+function delayReadyEvent(milliseconds){ // from Zack, blame Electron
+	if(milliseconds == 0) return;
+	const originalEmit = electron.app.emit;
+	electron.app.emit = function(event, ...args){
+		if(event !== "ready") return Reflect.apply(originalEmit, this, arguments);
+		setTimeout(() => {
+			electron.app.emit = originalEmit;
+			electron.app.emit("ready", ...args);
+		}, milliseconds);
+	};
 }

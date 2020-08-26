@@ -16,6 +16,8 @@
 {
 	// Download featured modules?
 	autoDownloadFeaturedModules: true,
+	// Is a startup delay needed? Set it to zero to disable (LINUX ONLY)
+	startupDelayMs: 200,
 	// Extra window properties
 	windowProps: {},
 	// A list of enabled modules

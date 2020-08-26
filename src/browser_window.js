@@ -37,6 +37,9 @@ class BrowserWindow extends electron.BrowserWindow {
 		// We do not call super to get an actual BrowserWindow from electron and not mess with native casts (broke GTK modals)
 		const window = new glasstron.BrowserWindow(options);
 		window.webContents._glasscord_preload = _preload;
+		window.on("close", () => {
+			Main.getInstance()._emitWindowClose(window);
+		});
 		Main.getInstance()._emitWindowInit(window);
 		return window;
 	}

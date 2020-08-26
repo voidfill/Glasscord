@@ -80,6 +80,7 @@ module.exports = class Module{
 	onLoad(){}
 	onUnload(){}
 	windowInit(win){}
+	windowClose(win){}
 	update(win, cssProp, value){}
 
 }

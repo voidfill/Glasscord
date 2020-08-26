@@ -176,6 +176,12 @@ module.exports = class Main{
 		}
 	}
 	
+	_emitWindowClose(win){
+		for(let moduleName in this.modules){
+			this.modules[moduleName].windowClose(win);
+		}
+	}
+	
 	/**
 	 * Another handy method to log directly to DevTools
 	 */
