@@ -32,6 +32,20 @@ It seemed that a few people liked the idea, so I made that into an actual tool f
 
 _TL;DR: Help me I have no purpose in this life anymore_
 
+## Is it secure to use it?
+
+It is not. If you want your app to be 100% safe, you should not modify it in the first place.
+That said, this modification disables some of Electron's security restrictions to be able to work as intended.
+
+I am fully committed in reducing the amount of stuff Glasscord disables or "hacks around" to work properly, but
+it's a considerable effort to do so, and in some way it's not really possible to do it 100% of the times.
+
+Legally speaking, modifying apps which work mostly offline (like Visual Studio Code) should be safe;
+however, modifying apps tied with online services (like Discord) might go against their Terms of Service.
+
+Neither I nor my contributors assume any kind of responsibility if your online accounts get shut down because you used this modification.
+You are and will always be on your own if you inject stuff on applications!
+
 ## How do I install it?
 Well, glad you asked!
 
