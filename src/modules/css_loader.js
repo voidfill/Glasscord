@@ -17,6 +17,7 @@
 
 const Module = require("../module.js");
 const path = require("path");
+const fs = require("fs");
 const Utils = require("../utils.js");
 const Main = require("../main.js");
 const electron = require("electron");
@@ -36,9 +37,16 @@ module.exports = class CSSLoader extends Module {
 		
 		for(let win of electron.BrowserWindow.getAllWindows())
 			this.windowInit(win);
+
+		if(this.config.cssPath.length !== 0)
+			this.watcher = this._cssWatch();
+		else
+			this.logGlobal("No CSS file specified!", "log");
 	}
 
 	onUnload(){
+		delete this.watcher;
+		
 		for(let webContentsID in this.injectionMap){
 			let webContents = electron.webContents.fromId(parseInt(webContentsID));
 			Main._executeInRenderer(webContents, this._unload);
@@ -52,63 +60,62 @@ module.exports = class CSSLoader extends Module {
 	windowInit(win){
 		if(typeof this.injectionMap[win.webContents.id] !== "undefined") return;
 		const _this = this;
-		this.injectionMap[win.webContents.id] = function(){_this._event(win)};
+		this.injectionMap[win.webContents.id] = async function(){await _this._cssRead(win.webContents)};
 
 		// check if already ready and update accordingly
-		Main._executeInRenderer(win.webContents, this._getReadyState).then(ready => {
+		Main._executeInRenderer(win.webContents, this._getReadyState).then(async ready => {
 			if(ready)
-				this._event(win);
+				await this._cssRead(win.webContents);
 			win.webContents.on("dom-ready", this.injectionMap[win.webContents.id]);
 		});
 	}
+	
+	windowClose(win){
+		// remove from map
+		delete this.injectionMap[win.webContents.id];
+	}
 
-	_event(win){
-		Main._executeInRenderer(win.webContents, this._load, this.config.cssPath);
+	async _cssRead(webContents){
+		if(this.config.cssPath.length === 0) return;
+		const css = await fs.promises.readFile(this.config.cssPath, {encoding: "utf8"});
+		this.logGlobal("CSS file read, now sending to renderer", "log");
+		Main._executeInRenderer(webContents, this._load, css);
+	}
+	
+	_cssWatch(){
+		return fs.watch(
+			this.config.cssPath,
+			{encoding: "utf8"},
+			async (eventType) => {
+				if(eventType == "change"){
+					const css = await fs.promises.readFile(this.config.cssPath);
+					for(let webContentsID in this.injectionMap){
+						let webContents = electron.webContents.fromId(parseInt(webContentsID));
+						Main._executeInRenderer(webContents, this._load, css);
+					}
+				}
+			}
+		);
 	}
 
 	// Renderer functions
-	_load(cssPath){
-		if(typeof cssPath === "undefined" || (typeof cssPath === "string" && cssPath.length === 0)) return;
+	_load(css){
+		if(typeof css === "undefined" || (typeof css === "string" && css.length === 0)) return;
 
-		// We'll use our custom GlasscordApi to require modules
-		const path = GlasscordApi.require("path");
-		const fs = GlasscordApi.require("fs");
-
-		function readFile(path, encoding = "utf-8") {
-			return new Promise((resolve, reject) => {
-					fs.readFile(path, encoding, (err, data) => {
-					if (err) reject(err);
-					else resolve(data);
-				});
-			});
+		if(typeof window._glasscord_customCss === "undefined"){
+			window._glasscord_customCss = document.createElement("style");
+			window._glasscord_customCss.id = "glasscord-custom-css";
+			document.head.appendChild(window._glasscord_customCss);
 		}
 
-		if(typeof window.GlasscordApi.customCss === "undefined") readFile(cssPath).then(css => {
-			window.GlasscordApi.customCss = document.createElement("style");
-			window.GlasscordApi.customCss.id = "glasscord-custom-css";
-			document.head.appendChild(window.GlasscordApi.customCss);
-			window.GlasscordApi.customCss.innerHTML = css;
-			console.log("%c[Glasscord] %cCustom stylesheet loaded!", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;");
-
-			if(typeof window.GlasscordApi.cssWatcher === "undefined") {
-				window.GlasscordApi.cssWatcher = fs.watch(cssPath, { encoding: "utf-8" },
-				eventType => {
-					if (eventType == "change" && window.GlasscordApi.customCss) {
-						readFile(cssPath).then(newCss => {
-							window.GlasscordApi.customCss.innerHTML = newCss;
-							console.log("%c[Glasscord] %cCustom stylesheet reloaded!", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;");
-						});
-					}
-				});
-			}
-		}).catch(() => console.warn("%c[Glasscord] %cCustom stylesheet not found. Skipping...", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;"));
+		window._glasscord_customCss.innerHTML = css;
+		console.log("%c[Glasscord] %cCustom stylesheet loaded!", "color:#ff00ff;font-weight:bold", "color:inherit;font-weight:normal;");
 	}
 	
 	_unload(){
-		if(window.GlasscordApi.cssWatcher) delete window.GlasscordApi.cssWatcher;
-		if(window.GlasscordApi.customCss){
-			document.head.removeChild(window.GlasscordApi.customCss);
-			delete window.GlasscordApi.customCss;
+		if(window._glasscord_customCss){
+			document.head.removeChild(window._glasscord_customCss);
+			delete window._glasscord_customCss;
 		}
 	}
 
