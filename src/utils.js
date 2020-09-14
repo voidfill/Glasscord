@@ -96,6 +96,12 @@ class Utils{
 			});
 		});
 	}
+	
+	static httpsGetPromisify(url, options){
+		return new Promise(resolve => {
+			this.httpsGet(url, options, resolve);
+		})
+	}
 
 	static hash(algo, value){
 		return crypto.createHash(algo).update(value).digest('hex');

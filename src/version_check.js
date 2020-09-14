@@ -21,68 +21,79 @@ const Utils = require("./utils.js");
 const pak = require("../package.json");
 const options = {headers: {"user-agent": "glasscord"}};
 
-module.exports = function(){
-	if(!Utils.getGlobalConfig().config.autoUpdate) return console.log("Glasscord autoupdate is disabled!");
+const pkgDetails = path.parse(path.resolve(__dirname, ".."));
+
+module.exports = async function(){
+	if(!Utils.getGlobalConfig().config.autoUpdate){
+		console.log("Glasscord autoupdate is disabled!");
+		return false;
+	}
 	
-	if(path.extname(path.join(__dirname, "..")) == ".asar"){ // Are we inside an asar?
+	if(pkgDetails.ext == ".asar"){ // Are we inside an asar?
 		console.log("You are running a packaged Glasscord installation!"); // Yes.
 		
 		// Check write access in the directory.
 		try{
-			fs.accessSync(path.resolve(__dirname, "..", ".."), fs.constants.R_OK | fs.constants.W_OK); // asar directory
-			fs.accessSync(path.resolve(__dirname, ".."), fs.constants.R_OK | fs.constants.W_OK); // asar itself
+			fs.accessSync(pkgDetails.dir, fs.constants.R_OK | fs.constants.W_OK); // asar directory
+			fs.accessSync(path.resolve(pkgDetails.dir, pkgDetails.base), fs.constants.R_OK | fs.constants.W_OK); // asar itself
 		}catch(e){
 			console.log("No write access to the installation folder! Glasscord won't auto update!");
-			return;
+			return false;
 		}
 		
-		let asarName = path.join(path.dirname(path.join(__dirname, "..")), path.basename(path.join(__dirname, ".."), ".asar")); // result is whatever-the-dir/glasscord (without the .asar at the end)
 		// CALL TO THE GITHUB RELEASES API
-		Utils.httpsGet("https://api.github.com/repos/AryToNeX/Glasscord/releases/latest", options, result => {
-			// Let's check the error
-			if(result.statusCode != 200){
-				console.log("Error while querying GitHub API (releases/latest): status code is " + result.statusCode);
-				return;
+		let result = await Utils.httpsGetPromisify("https://api.github.com/repos/AryToNeX/Glasscord/releases/latest", options);
+
+		// Let's check for HTTP 200
+		if(result.statusCode != 200){
+			console.log("Error while querying GitHub API (releases/latest): status code is " + result.statusCode);
+			return false;
+		}
+
+		let data = JSON.parse(result.data);
+
+		// If there's no new version, return here.
+		if(Utils.versionCompare(pak.version, data.tag_name.substring(1), {zeroExtend: true}) >= 0)
+			return false;
+
+		console.log("A new Glasscord update was found! Downloading...");
+
+		// Let's traverse the assets array to find our object!
+		let url;
+		for(let asset of data.assets){
+			if(asset.name == "glasscord.asar"){
+				url = asset.browser_download_url;
+				break;
 			}
+		}
 
-			let data = JSON.parse(result.data);
+		// Let's download it!
+		result = await Utils.httpsGetPromisify(url, options);
+		// Again, let's check for errors
+		if(result.statusCode != 200){
+			console.log("Error while querying GitHub API (releases/download): status code is " + result.statusCode);
+			return false;
+		}
 
-			// If there's no new version, return here.
-			if(Utils.versionCompare(pak.version, data.tag_name.substring(1), {zeroExtend: true}) >= 0) return;
-
-			console.log("A new Glasscord update was found! Downloading...");
-
-			// Let's traverse the assets array to find our object!
-			let url;
-			for(let asset of data.assets){
-				if(asset.name == "glasscord.asar"){
-					url = asset.browser_download_url;
-					break;
-				}
-			}
-
-			// Let's download it!
-			Utils.httpsGet(url, options, result => {
-				// Again, let's check for errors
-				if(result.statusCode != 200){
-					console.log("Error while querying GitHub API (releases/download): status code is " + result.statusCode);
-					return;
-				}
-
-				// We may want to save the data in a file with a .new extension for now.
-				let newName = asarName + ".new";
-				fs.writeFileSync(newName, result.data);
-				// Let's rename files now
-				try{
-					fs.renameSync(asarName + ".asar", asarName + ".old"); // Our current .asar becomes .old
-					fs.renameSync(newName, asarName + ".asar"); // The .new file becomes our .asar
-				}catch(e){
-					console.log("Glasscord update failed upon file renaming!");
-				}
-				// We finished! The next time Discord is opened, it will have the new version up and running, which is enough.
-				console.log("Glasscord update downloaded!");
-			});
-		});
+		// We may want to save the data in a file with a .new extension for now.
+		await fs.promises.writeFile(path.resolve(pkgDetails.dir, pkgDetails.name + ".new"), result.data);
+		// Let's rename files now
+		try{
+			await fs.promises.rename(
+				path.resolve(pkgDetails.dir, pkgDetails.base),
+				path.resolve(pkgDetails.dir, pkgDetails.name + "-v" + pak.version + ".old")
+			); // Our current .asar becomes .old
+			await fs.promises.rename(
+				path.resolve(pkgDetails.dir, pkgDetails.name + ".new"),
+				path.resolve(pkgDetails.dir, pkgDetails.base)
+			); // The .new file becomes our .asar
+		}catch(e){
+			console.log("Glasscord update failed upon file renaming!");
+		}
+		// We finished! The next time Discord is opened, it will have the new version up and running, which is enough.
+		console.log("Glasscord update downloaded!");
+		return true;
 	}
+	return false;
 }
 
