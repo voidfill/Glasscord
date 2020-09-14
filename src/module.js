@@ -41,8 +41,6 @@ module.exports = class Module{
 		this.onLoad();
 	}
 
-	shutdown(){ this.unload(); } // TODO: remove this
-
 	unload(){
 		this.onUnload();
 		this.logGlobal("Module unloaded!");

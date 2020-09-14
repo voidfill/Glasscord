@@ -86,7 +86,7 @@ module.exports = class Main{
 		if(module.constructor.isCore) return false;
 		for(let _mod in this.modules){
 			if(this.modules[_mod] === module){
-				this.modules[_mod].shutdown();
+				this.modules[_mod].unload();
 				delete this.modules[_mod];
 				return true;
 			}
