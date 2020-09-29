@@ -98,9 +98,9 @@ module.exports = async function(){
 				// We finished! The next time Discord is opened, it will have the new version up and running, which is enough.
 				console.log("Glasscord update downloaded!");
 				return true;
+		}catch(e){
+			console.error("Glasscord update was abnormally interrupted", e);
 		}
-	}catch(e){
-		console.error("Glasscord update was abnormally interrupted", e);
 	}
 	return false;
 }
