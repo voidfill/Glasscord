@@ -98,9 +98,9 @@ module.exports = class Main{
 	
 	_getModuleFilePath(moduleFile){
 		let parsedFile = path.parse(moduleFile);
-		if(parsedFile.ext === ".js" || parsedFile.ext === ".asar"){
+		if(parsedFile.ext === ".js" || parsedFile.ext === ".asar" || parsedFile.ext === ".module"){
 			let file;
-			// we got a js/asar filename
+			// we got a js/asar filename or a .module folder name
 			if(parsedFile.root == "" && parsedFile.dir == "" && !fs.existsSync(parsedFile.base)){
 				if(fs.readdirSync(path.resolve(__dirname, "modules")).includes(parsedFile.base))
 					// we might be referring to an internal module!
