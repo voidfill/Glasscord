@@ -21,11 +21,19 @@ const Module = require("../module.js");
 module.exports = class Linux extends Module{
 	static isCore = true;
 	static platform = ["linux"];
-	cssProps = ["--glasscord-linux-blur"];
+	cssProps = ["--glasscord-linux-blur", "--glasscord-gnome-sigma"];
 	
 	update(win, cssProp, value){
-		value = (typeof value === "string" && value.toLowerCase() === "true");
-		win.setBlur(value);
+		switch(cssProp){
+			case "--glasscord-linux-blur":
+				value = (typeof value === "string" && value.toLowerCase() === "true");
+				win.setBlur(value);
+				break;
+			case "--glasscord-gnome-sigma":
+				if(typeof win.blurGnomeSigma === "undefined") break;
+				win.blurGnomeSigma = parseInt(value);
+				break;
+		}
 	}
 	
 	_getXWindowManager(){
