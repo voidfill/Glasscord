@@ -145,6 +145,13 @@ Tells the window compositor whether to blur behind windows or not.
 
 **Note:** Check the Glasstron project to see which window servers/managers are compatible
 
+### `--glasscord-gnome-sigma` (Linux)
+#### accepts an `int` between `0` and `111`; defaults to `100`
+Tells GNOME Shell how much blur to apply to a window.
+
+**Note:** This works with GNOME Shell 3.36+ only!
+For further information please check out Glasstron.
+
 ## I want to contribute to this madness!
 Did you find a bug? File it in the issues section!
 Do you know how to fix stuff? Make a pull request!
