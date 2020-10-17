@@ -21,7 +21,7 @@ const Module = require("../module.js");
 module.exports = class Linux extends Module{
 	static isCore = true;
 	static platform = ["linux"];
-	cssProps = ["--glasscord-linux-blur", "--glasscord-gnome-sigma"];
+	cssProps = ["--glasscord-linux-blur", "--glasscord-gnome-sigma", "--glasscord-blur-corner-radius"];
 	
 	update(win, cssProp, value){
 		switch(cssProp){
@@ -32,6 +32,10 @@ module.exports = class Linux extends Module{
 			case "--glasscord-gnome-sigma":
 				if(typeof win.blurGnomeSigma === "undefined") break;
 				win.blurGnomeSigma = parseInt(value);
+				break;
+			case "--glasscord-blur-corner-radius":
+				if(typeof win.blurCornerRadius === "undefined") break;
+				win.blurCornerRadius = parseInt(value);
 				break;
 		}
 	}

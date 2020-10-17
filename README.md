@@ -152,6 +152,14 @@ Tells GNOME Shell how much blur to apply to a window.
 **Note:** This works with GNOME Shell 3.36+ only!
 For further information please check out Glasstron.
 
+### `--glasscord-blur-corner-radius` (Linux)
+#### accepts an `int`; defaults to `0`
+The corner radius of the blurry background
+
+**Note:** This won't clip the actual application!
+Please refer to Glasstron's documentation to see which
+compositors are compatible.
+
 ## I want to contribute to this madness!
 Did you find a bug? File it in the issues section!
 Do you know how to fix stuff? Make a pull request!
