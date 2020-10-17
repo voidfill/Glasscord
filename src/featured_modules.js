@@ -83,7 +83,7 @@ module.exports = async function(){
 
 		let blobs = {};
 		for(let blob of data.tree){
-			if(blob.type === "blob" && path.extname(blob.path) === ".js")
+			if(blob.type === "blob" && (path.extname(blob.path) === ".js" || path.extname(blob.path) === ".asar"))
 				blobs["featured/" + appName + "/" + blob.path] = blob.sha;
 		}
 
