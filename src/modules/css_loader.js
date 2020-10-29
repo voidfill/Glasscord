@@ -88,7 +88,7 @@ module.exports = class CSSLoader extends Module {
 			{encoding: "utf8"},
 			async (eventType) => {
 				if(eventType == "change"){
-					const css = await fs.promises.readFile(this.config.cssPath);
+					const css = await fs.promises.readFile(this.config.cssPath, {encoding: "utf8"});
 					for(let webContentsID in this.injectionMap){
 						let webContents = electron.webContents.fromId(parseInt(webContentsID));
 						Main._executeInRenderer(webContents, this._load, css);
