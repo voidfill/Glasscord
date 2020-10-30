@@ -37,5 +37,5 @@ module.exports = class Config{
 		fs.writeFileSync(this.path, JSON5.stringify(this.config, undefined, 2));
 	}
 
-}
+};
 

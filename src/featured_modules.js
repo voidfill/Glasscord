@@ -19,7 +19,6 @@ const Utils = require("./utils.js");
 const Main = require("./main.js");
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
 
 const URL = "https://api.github.com/repos/AryToNeX/Glasscord-Modules/git/trees/";
 const FilePattern = "https://raw.githubusercontent.com/AryToNeX/Glasscord-Modules/{SHA}/{PATH}";
@@ -28,14 +27,14 @@ const modulePath = path.resolve(Utils.getSavePath(), "_modules");
 
 var appName = Utils.getRootAppName();
 
-module.exports = async function(){
+module.exports = async () => {
 	if(!Main.getInstance().appConfig.autoDownloadFeaturedModules) return;
 
 	console.log("Fetching featured Glasscord modules for application: " + appName);
 	try{
 		let result = await Utils.httpsGetPromisify(URL + "master", options);
 
-		if(result.statusCode != 200){
+		if(result.statusCode !== 200){
 			console.log("[Glasscord Featured Modules] Error while querying GitHub API: status code is " + result.statusCode);
 			return;
 		}
@@ -54,7 +53,7 @@ module.exports = async function(){
 
 		result = await Utils.httpsGetPromisify(URL + featuredSha, options);
 
-		if(result.statusCode != 200){
+		if(result.statusCode !== 200){
 			console.log("[Glasscord Featured Modules] Error while querying GitHub API: status code is " + result.statusCode);
 			return;
 		}
@@ -74,7 +73,7 @@ module.exports = async function(){
 
 		result = await Utils.httpsGet(URL + appSha, options);
 
-		if(result.statusCode != 200){
+		if(result.statusCode !== 200){
 			console.log("[Glasscord Featured Modules] Error while querying GitHub API: status code is " + result.statusCode);
 			return;
 		}
@@ -99,7 +98,7 @@ module.exports = async function(){
 
 			console.log("[Glasscord Featured Modules] Downloading " + blobBaseName + "...");
 			result = await Utils.httpsGetPromisify(FilePattern.replace("{SHA}", masterSha).replace("{PATH}", blob), options);
-			if(result.statusCode != 200){
+			if(result.statusCode !== 200){
 				console.log("[Glasscord Featured Modules] Error while downloading " + blobBaseName + ": status code is " + result.statusCode);
 				return;
 			}

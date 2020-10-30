@@ -67,7 +67,7 @@ function injectGlasscordClass(){
 
 	if(require.cache[electronPath].exports !== newElectron)
 		console.log("Something's wrong! Glasscord can't be injected properly!");
-};
+}
 
 function injectFromResources(){
 	// Use the app's original info to run it
@@ -94,16 +94,16 @@ function injectFromResources(){
 
 function injectGlasscordNodeModule(){
 	const oldResolveFilename = Module._resolveFilename;
-	Module._resolveFilename = function (request, parentModule, isMain, options) {
-		if(request == "glasscord") request = path.resolve(__dirname, "api.js");
+	Module._resolveFilename = (request, parentModule, isMain, options) => {
+		if(request === "glasscord") request = path.resolve(__dirname, "api.js");
 		return oldResolveFilename.call(this, request, parentModule, isMain, options);
-	}
+	};
 }
 
 function delayReadyEvent(milliseconds){ // from Zack, blame Electron
-	if(milliseconds == 0) return;
+	if(milliseconds === 0) return;
 	const originalEmit = electron.app.emit;
-	electron.app.emit = function(event, ...args){
+	electron.app.emit = (event, ...args) => {
 		if(event !== "ready") return Reflect.apply(originalEmit, this, arguments);
 		setTimeout(() => {
 			electron.app.emit = originalEmit;

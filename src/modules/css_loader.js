@@ -18,7 +18,6 @@
 const Module = require("../module.js");
 const path = require("path");
 const fs = require("fs");
-const Utils = require("../utils.js");
 const Main = require("../main.js");
 const electron = require("electron");
 
@@ -60,7 +59,7 @@ module.exports = class CSSLoader extends Module {
 	windowInit(win){
 		if(typeof this.injectionMap[win.webContents.id] !== "undefined") return;
 		const _this = this;
-		this.injectionMap[win.webContents.id] = async function(){await _this._cssRead(win.webContents)};
+		this.injectionMap[win.webContents.id] = async () => {await _this._cssRead(win.webContents);};
 
 		// check if already ready and update accordingly
 		Main._executeInRenderer(win.webContents, this._getReadyState).then(async ready => {
@@ -87,7 +86,7 @@ module.exports = class CSSLoader extends Module {
 			this.config.cssPath,
 			{encoding: "utf8"},
 			async (eventType) => {
-				if(eventType == "change"){
+				if(eventType === "change"){
 					const css = await fs.promises.readFile(this.config.cssPath, {encoding: "utf8"});
 					for(let webContentsID in this.injectionMap){
 						let webContents = electron.webContents.fromId(parseInt(webContentsID));
@@ -99,6 +98,8 @@ module.exports = class CSSLoader extends Module {
 	}
 
 	// Renderer functions
+	/* eslint-disable no-undef */
+	/* eslint-disable class-methods-use-this */
 	_load(css){
 		if(typeof css === "undefined" || (typeof css === "string" && css.length === 0)) return;
 
@@ -123,4 +124,4 @@ module.exports = class CSSLoader extends Module {
 		return document.readyState === "complete" || document.readyState === "interactive";
 	}
 
-}
+};

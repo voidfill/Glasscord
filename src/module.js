@@ -15,6 +15,9 @@
 */
 "use strict";
 
+/* eslint-disable no-unused-vars */
+/* eslint-disable class-methods-use-this */
+
 const path = require("path");
 const Utils = require("./utils.js");
 const Main = require("./main.js");
@@ -81,4 +84,4 @@ module.exports = class Module{
 	windowClose(win){}
 	update(win, cssProp, value){}
 
-}
+};

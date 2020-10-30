@@ -1,7 +1,5 @@
-ewc/*
-ewc64/* 
-latest.json
+.idea
+.vscode
 glasscord.asar
 node_modules/*
-package-lock.json
 glasscord_config.json

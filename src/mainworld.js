@@ -1,4 +1,4 @@
- /*
+/*
   * Copyright 2020 AryToNeX
   * 
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,21 @@
   */
 "use strict";
 
+/* eslint-disable no-undef */
+
 function _watchdog(node){
 	GlasscordApi.refresh();
-	const callback = function(mutationsList, observer){
+	function callback(mutationsList){
 		let shouldUpdate = false;
 		for(let mutation of mutationsList){
-			if(mutation.target.nodeName.toLowerCase() == "style"){ // text in style has changed!
+			if(mutation.target.nodeName.toLowerCase() === "style"){ // text in style has changed!
 				shouldUpdate = true;
 				break;
 			}
 			
-			if(mutation.addedNodes.length != 0){ // some nodes were added!
+			if(mutation.addedNodes.length !== 0){ // some nodes were added!
 				for(let addedNode of mutation.addedNodes){
-					if(addedNode.nodeName.toLowerCase() == "style"){
+					if(addedNode.nodeName.toLowerCase() === "style"){
 						shouldUpdate = true;
 						break;
 					}
@@ -36,9 +38,9 @@ function _watchdog(node){
 			
 			if(shouldUpdate) break; // don't spend other time iterating
 			
-			if(mutation.removedNodes.length != 0){ // some nodes were removed!
+			if(mutation.removedNodes.length !== 0){ // some nodes were removed!
 				for(let removedNode of mutation.removedNodes){
-					if(removedNode.nodeName.toLowerCase() == "style"){
+					if(removedNode.nodeName.toLowerCase() === "style"){
 						shouldUpdate = true;
 						break;
 					}

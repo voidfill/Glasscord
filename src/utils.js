@@ -33,8 +33,8 @@ class Utils{
 
 	static getRootAppName(){
 		for(let rootAppName in rootApps)
-			for(let possibleCurrentApp of rootApps[rootAppName])
-				if(this.getAppName() === possibleCurrentApp) return rootAppName;
+		{for(let possibleCurrentApp of rootApps[rootAppName])
+			if(this.getAppName() === possibleCurrentApp) return rootAppName;}
 		return this.getAppName();
 	}
 
@@ -59,10 +59,10 @@ class Utils{
 	}
 
 	static getGlobalConfig(){
-		if(!this._config) this._config = new Config(
+		if(!this._config) {this._config = new Config(
 			path.resolve(this.getSavePath(), "config.json5"),
 			require("./resources/config.json5")
-		);
+		);}
 		return this._config;
 	}
 
@@ -73,23 +73,24 @@ class Utils{
 	}
 
 	static isEmpty(obj) {
-		if (obj == null || obj == undefined || obj == "") return true;
+		if (obj == null || obj === undefined || obj === "") return true;
 		if (typeof(obj) !== "object") return false;
-		if (Array.isArray(obj)) return obj.length == 0;
-		for (const key in obj) {
+		if (Array.isArray(obj)) return obj.length === 0;
+		for (const key in obj) 
+			// eslint-disable-next-line no-prototype-builtins
 			if (obj.hasOwnProperty(key)) return false;
-		}
+		
 		return true;
 	}
 
 	static httpsGet(url, options, callback){
 		https.get(url, options, result => {
-			if(result.statusCode == 301 || result.statusCode == 302){
+			if(result.statusCode === 301 || result.statusCode === 302){
 				this.httpsGet(result.headers.location, options, callback);
 				return;
 			}
 			let data = Buffer.alloc(0);
-			result.on("data", chunk => {data = Buffer.concat([data, chunk])});
+			result.on("data", chunk => {data = Buffer.concat([data, chunk]);});
 			result.on("end", () => {
 				result.data = data;
 				callback(result);
@@ -100,11 +101,11 @@ class Utils{
 	static httpsGetPromisify(url, options){
 		return new Promise(resolve => {
 			this.httpsGet(url, options, resolve);
-		})
+		});
 	}
 
 	static hash(algo, value){
-		return crypto.createHash(algo).update(value).digest('hex');
+		return crypto.createHash(algo).update(value).digest("hex");
 	}
 
 	// https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
@@ -131,13 +132,13 @@ class Utils{
 		}
 
 		for (var i = 0; i < v1parts.length; ++i) {
-			if (v2parts.length == i) return 1;
-			if (v1parts[i] == v2parts[i]) continue;
+			if (v2parts.length === i) return 1;
+			if (v1parts[i] === v2parts[i]) continue;
 			else if (v1parts[i] > v2parts[i]) return 1;
 			else return -1;
 		}
 
-		if (v1parts.length != v2parts.length) return -1;
+		if (v1parts.length !== v2parts.length) return -1;
 
 		return 0;
 	}

@@ -22,11 +22,12 @@ module.exports = class Darwin extends Module{
 	static platform = ["darwin"];
 	cssProps = ["--glasscord-macos-vibrancy"];
 	
+	// eslint-disable-next-line class-methods-use-this
 	update(win, cssProp, value){
-		if(!value || value == "none")
+		if(!value || value === "none")
 			value = null;
 		if(value === "true")
 			value = "fullscreen-ui";
 		win.setVibrancy(value);
 	}
-}
+};

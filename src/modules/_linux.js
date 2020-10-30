@@ -23,6 +23,7 @@ module.exports = class Linux extends Module{
 	static platform = ["linux"];
 	cssProps = ["--glasscord-linux-blur", "--glasscord-gnome-sigma", "--glasscord-blur-corner-radius"];
 	
+	// eslint-disable-next-line class-methods-use-this
 	update(win, cssProp, value){
 		switch(cssProp){
 			case "--glasscord-linux-blur":
@@ -40,7 +41,8 @@ module.exports = class Linux extends Module{
 		}
 	}
 	
+	// eslint-disable-next-line class-methods-use-this
 	_getXWindowManager(){
 		return Glasstron.getPlatform()._getXWindowManager();
 	}
-}
+};

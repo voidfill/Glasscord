@@ -23,13 +23,13 @@ const options = {headers: {"user-agent": "glasscord"}};
 
 const pkgDetails = path.parse(path.resolve(__dirname, ".."));
 
-module.exports = async function(){
+module.exports = async () => {
 	if(!Utils.getGlobalConfig().config.autoUpdate){
 		console.log("Glasscord autoupdate is disabled!");
 		return false;
 	}
 	
-	if(pkgDetails.ext == ".asar"){ // Are we inside an asar?
+	if(pkgDetails.ext === ".asar"){ // Are we inside an asar?
 		console.log("You are running a packaged Glasscord installation!"); // Yes.
 		
 		// Check write access in the directory.
@@ -46,7 +46,7 @@ module.exports = async function(){
 			let result = await Utils.httpsGetPromisify("https://api.github.com/repos/AryToNeX/Glasscord/releases/latest", options);
 			
 			// Let's check for HTTP 200
-			if(result.statusCode != 200){
+			if(result.statusCode !== 200){
 				console.log("Error while querying GitHub API (releases/latest): status code is " + result.statusCode);
 				return false;
 			}
@@ -57,51 +57,51 @@ module.exports = async function(){
 			if(Utils.versionCompare(pak.version, data.tag_name.substring(1), {zeroExtend: true}) >= 0)
 				return false;
 				
-				console.log("A new Glasscord update was found! Downloading...");
+			console.log("A new Glasscord update was found! Downloading...");
 				
-				// Let's traverse the assets array to find our object!
-				let url;
-				for(let asset of data.assets){
-					if(asset.name == "glasscord.asar"){
-						url = asset.browser_download_url;
-						break;
-					}
+			// Let's traverse the assets array to find our object!
+			let url;
+			for(let asset of data.assets){
+				if(asset.name === "glasscord.asar"){
+					url = asset.browser_download_url;
+					break;
 				}
+			}
 				
-				// Let's download it!
-				result = await Utils.httpsGetPromisify(url, options);
-				// Again, let's check for errors
-				if(result.statusCode != 200){
-					console.log("Error while querying GitHub API (releases/download): status code is " + result.statusCode);
-					return false;
-				}
+			// Let's download it!
+			result = await Utils.httpsGetPromisify(url, options);
+			// Again, let's check for errors
+			if(result.statusCode !== 200){
+				console.log("Error while querying GitHub API (releases/download): status code is " + result.statusCode);
+				return false;
+			}
 				
-				// We may want to save the data in a file with a .new extension for now.
-				await fs.promises.writeFile(path.resolve(pkgDetails.dir, pkgDetails.name + ".new"), result.data);
-				// Let's rename files now
-				try{
-					await fs.promises.rename(
-						path.resolve(
-							pkgDetails.dir, pkgDetails.base),
-							path.resolve(pkgDetails.dir, pkgDetails.name + "-v" + pak.version + ".old"
-						)
-					); // Our current .asar becomes .old
-					await fs.promises.rename(
-						path.resolve(
-							pkgDetails.dir, pkgDetails.name + ".new"),
-							path.resolve(pkgDetails.dir, pkgDetails.base
-						)
-					); // The .new file becomes our .asar
-				}catch(e){
-					console.log("Glasscord update failed upon file renaming!");
-				}
-				// We finished! The next time Discord is opened, it will have the new version up and running, which is enough.
-				console.log("Glasscord update downloaded!");
-				return true;
+			// We may want to save the data in a file with a .new extension for now.
+			await fs.promises.writeFile(path.resolve(pkgDetails.dir, pkgDetails.name + ".new"), result.data);
+			// Let's rename files now
+			try{
+				await fs.promises.rename(
+					path.resolve(
+						pkgDetails.dir, pkgDetails.base),
+					path.resolve(pkgDetails.dir, pkgDetails.name + "-v" + pak.version + ".old"
+					)
+				); // Our current .asar becomes .old
+				await fs.promises.rename(
+					path.resolve(
+						pkgDetails.dir, pkgDetails.name + ".new"),
+					path.resolve(pkgDetails.dir, pkgDetails.base
+					)
+				); // The .new file becomes our .asar
+			}catch(e){
+				console.log("Glasscord update failed upon file renaming!");
+			}
+			// We finished! The next time Discord is opened, it will have the new version up and running, which is enough.
+			console.log("Glasscord update downloaded!");
+			return true;
 		}catch(e){
 			console.error("Glasscord update was abnormally interrupted", e);
 		}
 	}
 	return false;
-}
+};
 

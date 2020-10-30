@@ -66,10 +66,10 @@ module.exports = class Main{
 		if(module.isApplicable()){
 
 			if(!module.isCore) // The module is not core
-				if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
-					this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
-				else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
-					return false; // skip it
+			{if(typeof this.appConfig.modules[module.prototype.constructor.name] === "undefined") // In case we don't have it set
+				this.appConfig.modules[module.prototype.constructor.name] = module.defaultOn; // we set it
+			else if(!this.appConfig.modules[module.prototype.constructor.name]) // if it's disabled
+				return false;} // skip it
 
 			if(typeof this.modules[module.prototype.constructor.name] !== "undefined") return false;
 
@@ -96,12 +96,12 @@ module.exports = class Main{
 	
 	// Methods for private use -- don't call them from outside, please
 	
+	// eslint-disable-next-line class-methods-use-this
 	_getModuleFilePath(moduleFile){
 		let parsedFile = path.parse(moduleFile);
 		if(parsedFile.ext === ".js" || parsedFile.ext === ".asar" || parsedFile.ext === ".module"){
-			let file;
 			// we got a js/asar filename or a .module folder name
-			if(parsedFile.root == "" && parsedFile.dir == "" && !fs.existsSync(parsedFile.base)){
+			if(parsedFile.root === "" && parsedFile.dir === "" && !fs.existsSync(parsedFile.base)){
 				if(fs.readdirSync(path.resolve(__dirname, "modules")).includes(parsedFile.base))
 					// we might be referring to an internal module!
 					return path.resolve(__dirname, "modules", parsedFile.base);
@@ -136,7 +136,9 @@ module.exports = class Main{
 		// ensure the modules directory exists
 		try{
 			fs.ensureDirSync(path.resolve(Utils.getSavePath(), "_modules"));
-		}catch(e){}
+		}catch(e){
+			// Nothing!
+		}
 
 		return this._loadModules(path.resolve(Utils.getSavePath(), "_modules"));
 	}
@@ -158,28 +160,28 @@ module.exports = class Main{
 		let promises = [];
 		
 		for(let moduleName in this.modules){
-			if(this.modules[moduleName].cssProps && this.modules[moduleName].cssProps.length != 0){
-				for(let prop of this.modules[moduleName].cssProps){
+			if(this.modules[moduleName].cssProps && this.modules[moduleName].cssProps.length !== 0){
+				for(let prop of this.modules[moduleName].cssProps)
 					promises.push(this.constructor._getCssProp(win.webContents, prop).then(value => this.modules[moduleName].update(win, prop, value)));
-				}
+				
 			}
 		}
 		
-		Promise.all(promises).then(res => {
-			this.constructor._log(win.webContents, "Updated!", 'log');
+		Promise.all(promises).then(() => {
+			this.constructor._log(win.webContents, "Updated!", "log");
 		});
 	}
 	
 	_emitWindowInit(win){
-		for(let moduleName in this.modules){
+		for(let moduleName in this.modules)
 			this.modules[moduleName].windowInit(win);
-		}
+		
 	}
 	
 	_emitWindowClose(win){
-		for(let moduleName in this.modules){
+		for(let moduleName in this.modules)
 			this.modules[moduleName].windowClose(win);
-		}
+		
 	}
 	
 	/**
@@ -188,11 +190,11 @@ module.exports = class Main{
 	static _log(webContents, message, level = "log"){
 		return this._executeInRenderer(webContents,
 			// RENDERER CODE BEGIN
-			function(message, level){
+			(message, level)=> {
 				console[level](...message);
 			}
 			// RENDERER CODE END
-		, this._formatLogMessage(message), level);
+			, this._formatLogMessage(message), level);
 	}
 	
 	static _logGlobal(message, level = "log"){
@@ -215,12 +217,13 @@ module.exports = class Main{
 	static _getCssProp(webContents, propName){
 		return this._executeInRenderer(webContents,
 			// RENDERER CODE BEGIN
-			function(propName){
+			(propName)=> {
+				// eslint-disable-next-line no-undef
 				let flag = getComputedStyle(document.documentElement).getPropertyValue(propName);
-				if(flag) return flag.trim().replace('"','');
+				if(flag) return flag.trim().replace("\"","");
 			}
 			// RENDERER CODE END
-		, propName).then(res => {
+			, propName).then(res => {
 			if(res) return res;
 			return null;
 		});
@@ -234,4 +237,4 @@ module.exports = class Main{
 		return webContents.executeJavaScript(`(${method})(...${JSON.stringify(params)});`);
 	}
 	
-}
+};

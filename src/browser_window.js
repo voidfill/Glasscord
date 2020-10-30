@@ -20,14 +20,13 @@ const fs = require("fs");
 const glasstron = require("glasstron");
 const path = require("path");
 const Main = require("./main.js");
-const Utils = require("./utils.js");
 
 /*
  * The BrowserWindow override class
  */
 class BrowserWindow extends electron.BrowserWindow {
 	constructor(options) {
-		if(process.platform != "win32") options.transparent = true;
+		if(process.platform !== "win32") options.transparent = true;
 		options.backgroundColor = "#00000000";
 
 		let _contextIsolation = false;

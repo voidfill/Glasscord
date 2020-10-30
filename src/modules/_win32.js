@@ -22,6 +22,7 @@ module.exports = class Win32 extends Module{
 	static platform = ["win32"];
 	cssProps = ["--glasscord-win-blur"];
 	
+	// eslint-disable-next-line class-methods-use-this
 	update(win, cssProp, value){
 		if(typeof value === "undefined" || value === null){
 			win.setBlur(false);
@@ -30,4 +31,4 @@ module.exports = class Win32 extends Module{
 		win.setBlur(true);
 		win.blurType = value;
 	}
-}
+};
