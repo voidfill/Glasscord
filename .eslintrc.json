@@ -12,6 +12,10 @@
         "sourceType": "script"
     },
     "rules": {
+        "arrow-body-style": [
+            "error",
+            "as-needed"
+	    ],
         "class-methods-use-this": 1,
         "strict": [
             "error",

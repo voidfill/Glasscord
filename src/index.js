@@ -103,7 +103,7 @@ function injectGlasscordNodeModule(){
 function delayReadyEvent(milliseconds){ // from Zack, blame Electron
 	if(milliseconds === 0) return;
 	const originalEmit = electron.app.emit;
-	electron.app.emit = (event, ...args) => {
+	electron.app.emit = function patchedEmit(event, ...args){
 		if(event !== "ready") return Reflect.apply(originalEmit, this, arguments);
 		setTimeout(() => {
 			electron.app.emit = originalEmit;
