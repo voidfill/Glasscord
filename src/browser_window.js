@@ -5,7 +5,7 @@
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,15 +26,15 @@ const Main = require("./main.js");
  */
 class BrowserWindow extends electron.BrowserWindow {
 	constructor(options) {
-		if(process.platform !== "win32") options.transparent = true;
+		if (process.platform !== "win32") options.transparent = true;
 		options.backgroundColor = "#00000000";
 
 		let _contextIsolation = false;
-		if(typeof options.webPreferences.contextIsolation !== "undefined")
+		if (typeof options.webPreferences.contextIsolation !== "undefined")
 			_contextIsolation = options.webPreferences.contextIsolation;
 
 		let _preload = null;
-		if(typeof options.webPreferences.preload !== "undefined")
+		if (typeof options.webPreferences.preload !== "undefined")
 			_preload = options.webPreferences.preload;
 		options.webPreferences.preload = path.join(__dirname, "preload.js");
 
@@ -45,8 +45,8 @@ class BrowserWindow extends electron.BrowserWindow {
 
 		window.webContents._glasscord_preload = _preload;
 		window.webContents._glasscord_contextIsolation = _contextIsolation;
-		
-		window.webContents.on("dom-ready", () => {
+
+		window.webContents.on("did-start-loading", () => {
 			window.webContents.executeJavaScript(fs.readFileSync(path.resolve(__dirname, "mainworld.js"), "utf8"));
 		});
 
@@ -63,8 +63,8 @@ class BrowserWindow extends electron.BrowserWindow {
 /*
  * Preload querying is handled by this piece of code
  */
-electron.ipcMain.on("_glasscord_preload", function waitForPreload(e){
-	if(typeof e.sender._glasscord_preload !== "undefined")
+electron.ipcMain.on("_glasscord_preload", function waitForPreload(e) {
+	if (typeof e.sender._glasscord_preload !== "undefined")
 		e.returnValue = e.sender._glasscord_preload;
 	else
 		setTimeout(waitForPreload, 50, e);
@@ -73,8 +73,8 @@ electron.ipcMain.on("_glasscord_preload", function waitForPreload(e){
 /*
  * Context isolation handling
  */
-electron.ipcMain.on("_glasscord_contextIsolation", function waitForCtxIsolation(e){
-	if(typeof e.sender._glasscord_contextIsolation !== "undefined")
+electron.ipcMain.on("_glasscord_contextIsolation", function waitForCtxIsolation(e) {
+	if (typeof e.sender._glasscord_contextIsolation !== "undefined")
 		e.returnValue = e.sender._glasscord_contextIsolation;
 	else
 		setTimeout(waitForCtxIsolation, 50, e);
