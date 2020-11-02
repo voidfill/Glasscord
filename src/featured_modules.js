@@ -71,7 +71,7 @@ module.exports = async () => {
 		if(typeof appSha === "undefined")
 			return console.log("[Glasscord Featured Modules] No featured modules available for this app.");
 
-		result = await Utils.httpsGet(URL + appSha, options);
+		result = await Utils.httpsGetPromisify(URL + appSha, options);
 
 		if(result.statusCode !== 200){
 			console.log("[Glasscord Featured Modules] Error while querying GitHub API: status code is " + result.statusCode);
