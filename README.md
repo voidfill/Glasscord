@@ -1,6 +1,6 @@
 This Fork of Glasscord mainly concentrates on changes made to [the discord example theme](https://github.com/voidfill/Glasscord/tree/master/extras/discord_example_theme).
 I personally changed some stuff and will try (not guaranteed) to keep it up-to-date.
-Note that i use [Powercord](https://github.com/powercord-org/powercord), so this Version of the theme *may* not work for you if you are using different Injectors/Clientmods or Plugins.
+Note that i use [Powercord](https://github.com/powercord-org/powercord), so this Version of the theme *may* not work for you if you are using different Injectors/Clientmods or Plugins. This version was also made to work on Windows 10 and with dark mode enabled exclusively.
 
 
 
