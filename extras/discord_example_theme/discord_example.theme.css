@@ -1,6 +1,6 @@
 /**
  * @name Glasscord Example Theme
- * @description This theme showcases Glasscord's features: glassy Discord!
+ * @description This theme showcases Glasscord's features: glassy Discord! (with a few edits by void thrown in, may not work with light mode or an OS different from windows 10)
  * @author AryToNeX
  * @version 0.1
  * @source https://github.com/AryToNeX/Glasscord
@@ -26,6 +26,12 @@
    limitations under the License.
 */
 
+/* This version has been edited by voidfill (https://github.com/voidfill) 
+for the original version, stick to AryToNeX 
+This veryion may be out of date and may have some bugs
+this is intended for use on windows 10, dont complain if it desnt work on other operating systems */
+
+
 /* USRBG compatibility CSS */
 @import url('https://discord-custom-covers.github.io/usrbg/dist/usrbg.css');
 
@@ -34,7 +40,7 @@
 
 	/* Windows-specific properties */
 	/* Blur mode. Available types: acrylic (strong blur), blurbehind (light blur), transparent */
-	--glasscord-win-blur: blurbehind;
+	--glasscord-win-blur: transparent;
 
 	/* macOS-specific properties */
 	/* Vibrancy mode */
@@ -45,13 +51,10 @@
 	/* It currently supports KWin only */
 	--glasscord-linux-blur: true;
 
-	/* The corner radius of the blurry background */
-	--glasscord-blur-corner-radius: 20px;
-
 	/* Discord-specific properties */
 	/* Custom (forced) titlebar */
 	/* native (default), windows, osx, linux (framed) */
-	--glasscord-titlebar: osx;
+	--glasscord-titlebar: windows;
 
 	/* USRBG Compatibility */
 	/* Please refer to https://github.com/Discord-Custom-Covers/usrbg */
@@ -64,6 +67,78 @@
 	--usrbg-modal-width: 600px; 
 	--usrbg-modal-height: 600px;
 }
+
+.theme-dark{
+	--background-primary: transparent;
+	--background-primary-alt: #36393ff0;
+	--background-secondary: #2f313650;
+	--background-secondary-chat: #2f3136a0;
+	--background-secondary-alt: #292b2f00;
+	--background-tertiary: #20222570;
+	--background-logo: #36393fa0;
+	--deprecated-card-bg: #36393f4c;
+	--deprecated-store-bg: #36393f00;
+	--background-attachments: #2f313640;
+	--background-search-bar: #111113b0;
+	--background-switcher: #2f3136ff;
+	--background-chatbox: #20222581;
+	--background-lights-out: #000;
+	--background-pinned: #2f3136ff;
+	--background-profile-expand: #2f3136ff;
+	--background-emoji: transparent;
+	--text-lights-out: #f0f0f0;
+	--background-titlebar: #2f313650;
+	--scrollbar-thin-thumb: #ffffff36;
+	--scrollbar-thin-track: transparent;
+	--scrollbar-auto-thumb: #ffffff36;
+	--scrollbar-auto-track: transparent;
+	--background-accent: #4f545c28;
+	--background-floating: #18191cc2;
+}
+
+/* fixes/tweaks */
+
+.autocomplete-1vrmpx {
+	background-color: #2f3136c9!important;
+}
+
+.theme-dark .selected-1Tbx07 {
+    background-color: #36393f96;
+}
+
+.unicodeShortcut-15J8Ck {
+	background-color: #1E1F22;
+}
+
+.jumpToPresentBar-G1R9s6 {
+	bottom: 8px;
+	border-radius: 8px 8px 8px 8px;
+	background-color: var(--background-chatbox);
+}
+
+.scrollerSpacer-avRLaA {
+	height: 75px;
+}
+
+.scroller-2LSbBU {
+	top: -50px;
+	bottom: -50px;
+}
+
+
+
+
+
+
+
+
+
+
+
+.isUnread-3Ef-o9 {
+	border-color: #f04747;
+}
+
 
 /* NORMAL */
 .reduce-motion .userPopout-3XzG_A {
@@ -217,32 +292,6 @@
 
 /* USRBG compatibility end */
 
-#app-mount{
-	background-color: transparent;
-	border-radius: var(--glasscord-blur-corner-radius);
-}
-
-.theme-dark{
-	--background-primary: transparent;
-	--background-primary-alt: #36393ff0;
-	--background-secondary: #2f313650;
-	--background-secondary-chat: #2f3136a0;
-	--background-secondary-alt: #292b2f00;
-	--background-tertiary: #20222570;
-	--background-logo: #36393fa0;
-	--deprecated-card-bg: #36393f4c;
-	--deprecated-store-bg: #36393f00;
-	--background-attachments: #2f313640;
-	--background-search-bar: #202225a0;
-	--background-switcher: #2f3136ff;
-	--background-chatbox: #20222550;
-	--background-lights-out: #000;
-	--background-pinned: #2f3136ff;
-	--background-profile-expand: #2f3136ff;
-	--background-emoji: #2f3136ff;
-	--text-lights-out: #f0f0f0;
-	--background-titlebar: #2f313650;
-}
 
 .theme-dark .scrollerThemed-2oenus.themedWithTrack-q8E3vB .scroller-2FKFPG::-webkit-scrollbar-track-piece {
 	background-color: transparent;
@@ -270,55 +319,6 @@
 	background-color: transparent;
 }
 
-.theme-light {
-	--background-primary: transparent;
-	--background-primary-alt: #ffffffff;
-	--background-secondary: #f2f3f550;
-	--background-secondary-chat: #f2f3f5a0;
-	--background-secondary-alt: #ebedef00;
-	--background-tertiary: #e3e5e860;
-	--background-logo: #f2f3f5a0;
-	--deprecated-card-bg: #f8f9f94c;
-	--deprecated-store-bg: #f8f9f900;
-	--background-attachments: #f6f6f640;
-	--background-search-bar: #e3e5e8a0;
-	--background-switcher: #f2f3f5ff;
-	--background-chatbox: #e3e5e850;
-	--background-lights-out: #fff;
-	--background-pinned: #f2f3f5ff;
-	--background-profile-expand: #f2f3f5ff;
-	--background-emoji: #f2f3f5ff;
-	--text-lights-out: #202020;
-	--background-titlebar: #f2f3f550;
-	--interactive-muted: #95999d;
-}
-
-.theme-light .scrollerThemed-2oenus.themedWithTrack-q8E3vB .scroller-2FKFPG::-webkit-scrollbar-track-piece {
-	background-color: transparent;
-	border: 4px solid transparent;
-}
-
-.theme-light .scrollerThemed-2oenus.themedWithTrack-q8E3vB .scroller-2FKFPG::-webkit-scrollbar-thumb {
-	border-color: transparent;
-	background-color: #e3e5e850;
-}
-
-.theme-light .container-1D34oG {   
-	background-color: transparent;
-}
-
-.theme-light .card-FDVird:before {
-	background-color: #f6f6f790;
-}
-
-.theme-light .codeRedemptionRedirect-1wVR4b {
-	background-color: #f6f6f750;
-	border-color: #dcddde50;
-}
-
-.theme-light .pageWrapper-1PgVDX {
-	background-color: transparent;
-}
 
 .withFrame-haYltI::after {
 	content: "";
@@ -420,16 +420,12 @@
 	background-color: var(--background-emoji) !important;
 }
 
-.app-2rEoOp {
+.appMount-3lHmkl {
 	background-color: transparent;
 }
 
-.divider-JfaTT5 {
-  border-top: none;
-}
-
-.isUnread-3Ef-o9 {
-	border-color: transparent !important;
+.app-2rEoOp {
+	background-color: transparent;
 }
 
 .attachment-33OFj0 {
@@ -613,4 +609,60 @@
 
 .footer-1fjuF6 {
 	display: none;
+}
+
+
+
+
+
+/* light theme stuff */
+/*
+.theme-light {
+	--background-primary: transparent;
+	--background-primary-alt: #ffffffff;
+	--background-secondary: #f2f3f550;
+	--background-secondary-chat: #f2f3f5a0;
+	--background-secondary-alt: #ebedef00;
+	--background-tertiary: #e3e5e860;
+	--background-logo: #f2f3f5a0;
+	--deprecated-card-bg: #f8f9f94c;
+	--deprecated-store-bg: #f8f9f900;
+	--background-attachments: #f6f6f640;
+	--background-search-bar: #e3e5e8a0;
+	--background-switcher: #f2f3f5ff;
+	--background-chatbox: #e3e5e850;
+	--background-lights-out: #fff;
+	--background-pinned: #f2f3f5ff;
+	--background-profile-expand: #f2f3f5ff;
+	--background-emoji: #f2f3f5ff;
+	--text-lights-out: #202020;
+	--background-titlebar: #f2f3f550;
+	--interactive-muted: #95999d;
+}
+
+.theme-light .scrollerThemed-2oenus.themedWithTrack-q8E3vB .scroller-2FKFPG::-webkit-scrollbar-track-piece {
+	background-color: transparent;
+	border: 4px solid transparent;
+}
+
+.theme-light .scrollerThemed-2oenus.themedWithTrack-q8E3vB .scroller-2FKFPG::-webkit-scrollbar-thumb {
+	border-color: transparent;
+	background-color: #e3e5e850;
+}
+
+.theme-light .container-1D34oG {   
+	background-color: transparent;
+}
+
+.theme-light .card-FDVird:before {
+	background-color: #f6f6f790;
+}
+
+.theme-light .codeRedemptionRedirect-1wVR4b {
+	background-color: #f6f6f750;
+	border-color: #dcddde50;
+}
+
+.theme-light .pageWrapper-1PgVDX {
+	background-color: transparent;
 }
