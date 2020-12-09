@@ -98,6 +98,7 @@ this is intended for use on windows 10, dont complain if it desnt work on other 
 
 /* fixes/tweaks */
 
+/* emoji/gif picker stuff */
 .autocomplete-1vrmpx {
 	background-color: #2f3136c9!important;
 }
@@ -107,9 +108,18 @@ this is intended for use on windows 10, dont complain if it desnt work on other 
 }
 
 .unicodeShortcut-15J8Ck {
-	background-color: #1E1F22;
+	backdrop-filter: blur(2px)
 }
 
+.input-3Xdcic, .input-1Rv96N, .iconLayout-3OgqU3, .iconLayout-1WxHy4 {
+	background-color: var(--background-search-bar);
+}
+
+.medium-2-DE5M .iconLayout-1WxHy4, .medium-1LLV3p .iconLayout-3OgqU3 {
+	margin-left: -1px;
+}
+
+/* jump to/unreads/msgcontainer */
 .jumpToPresentBar-G1R9s6 {
 	bottom: 8px;
 	border-radius: 8px 8px 8px 8px;
@@ -125,20 +135,46 @@ this is intended for use on windows 10, dont complain if it desnt work on other 
 	bottom: -50px;
 }
 
+.newMessagesBar-265mhP {
+	background-color: #7289dac5;
+	border-radius: 8px 8px 8px 8px;
+}
 
+/* search bar */
+.theme-dark .container-3ayLPN {
+	background-color: var(--background-secondary)
+}
 
+.theme-dark .option-96V44q.selected-rZcOL- {
+	background-color:  #2f313680;
+}
 
+.theme-dark .option-96V44q:after {
+	display: none;
+}
 
+.theme-dark .searchFilter-2ESiM3 {
+	background-color: #34383da8;
+}
 
-
-
-
-
+/* */
+.messagesPopoutWrap-1MQ1bW {
+	background-color: var(--background-secondary)!important;
+}
 
 .isUnread-3Ef-o9 {
 	border-color: #f04747;
 }
 
+/* light mode = no */
+.theme-light .messageContent-2qWWxC {
+	font-size: 0px;
+}
+
+.theme-light .messageContent-2qWWxC::after{
+	content: "just use dark mode :c";
+	font-size: 17px;
+}
 
 /* NORMAL */
 .reduce-motion .userPopout-3XzG_A {
