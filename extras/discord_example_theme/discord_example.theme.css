@@ -131,13 +131,18 @@ this is intended for use on windows 10, dont complain if it desnt work on other 
 }
 
 .scroller-2LSbBU {
-	top: -50px;
 	bottom: -50px;
 }
 
 .newMessagesBar-265mhP {
 	background-color: #7289dac5;
 	border-radius: 8px 8px 8px 8px;
+}
+
+.base-gE7OpD .text-1y-e8- {
+	background-color: var(--background-chatbox);
+	border-radius: 8px 8px 8px 8px;
+	margin-top: 1px;
 }
 
 /* search bar */
@@ -158,11 +163,15 @@ this is intended for use on windows 10, dont complain if it desnt work on other 
 }
 
 /* */
-.messagesPopoutWrap-1MQ1bW {
+.messagesPopoutWrap-1MQ1bW /*pinned msgs/inbox*/ {
 	background-color: var(--background-secondary)!important;
 }
 
-.isUnread-3Ef-o9 {
+.theme-dark .root-1gCeng /* channel description */ {
+	background-color: var(--background-secondary);
+}
+
+.isUnread-3Ef-o9 /* new bar */ {
 	border-color: #f04747;
 }
 
